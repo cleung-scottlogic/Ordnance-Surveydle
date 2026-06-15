@@ -1,0 +1,12 @@
+.map{
+  width: 100%;
+  height: 400px;
+
+}
+#map:focus {
+  outline: #4A74A8 solid 0.15em;
+}
+
+.ol-overlaycontainer-stopevent {
+  display: none;
+}
