@@ -1,6 +1,6 @@
 import type { LatLng } from "leaflet";
 import { useState } from "react";
-import { Marker, Popup, useMapEvents } from "react-leaflet";
+import { Marker, useMapEvents } from "react-leaflet";
 
 function LocationMarker({ fixedPosition }: { fixedPosition?: LatLng }) {
   if (fixedPosition) {

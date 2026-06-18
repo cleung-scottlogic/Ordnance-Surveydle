@@ -2,18 +2,20 @@ import { useState } from "react";
 import "./App.css";
 import MapView from "./Map/MapView";
 import type { MapContainerProps } from "react-leaflet";
-import { zoomLevels } from "./Map/zoomLevel";
 import L from "leaflet";
+import { DataService, fromGridRef, getStartinglocation } from "./DataService";
+import { zoomLevels } from "./Map/ZoomLevel";
 
 function App() {
   const [guesses, setGuesses] = useState(0);
 
-  const osmTileLayer = import.meta.env.VITE_OSM_TILELAYER;
-  const osmAttribution = `&copy; <a href="${import.meta.env.VITE_OSM_ATTRIBUTION}">OpenStreetMap</a> contributors`;
-  const historicalTileLayer = import.meta.env.VITE_HISTORICAL_TILELAYER;
-  // TODO: DELETE AND CREATE NEW KEY FOR VAULT
-  const key = "fIGLURh5nxHfE0ydIxke";
-  const historicalAttribution = `<a href="${import.meta.env.VITE_HISTORICAL_ATTRIBUTION}">National Library of Scotland</a>`;
+  const startingLocale = getStartinglocation();
+
+  const osgbOrigin = fromGridRef(
+    startingLocale.gridSquare +
+      startingLocale.easting +
+      startingLocale.northing,
+  );
 
   const maxZoom = zoomLevels.one.zoom;
   let minZoom = zoomLevels.two.zoom;
@@ -48,15 +50,15 @@ function App() {
       <section id="center">
         <MapView
           mapContainerProps={historicalMapContainerProps}
-          tileLayer={`${historicalTileLayer}${key}`}
-          attribution={historicalAttribution}
+          tileLayer={`${DataService.historicalTileLayer}${DataService.historicalTileLayerKey}`}
+          attribution={DataService.historicalAttribution}
           isMarkerEnabled={true}
           fixedMarker={new L.LatLng(origin.lat, origin.lng)}
         ></MapView>
         <MapView
           mapContainerProps={osmMapContainerProps}
-          tileLayer={osmTileLayer}
-          attribution={osmAttribution}
+          tileLayer={DataService.osmTileLayer}
+          attribution={DataService.osmAttribution}
           isMarkerEnabled={true}
         ></MapView>
       </section>

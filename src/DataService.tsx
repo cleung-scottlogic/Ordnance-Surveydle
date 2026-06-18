@@ -1,0 +1,73 @@
+interface DataService {
+  osmTileLayer: string;
+  osmAttribution: string;
+  historicalTileLayer: string;
+  historicalTileLayerKey: string;
+  historicalAttribution: string;
+}
+
+export const DataService: DataService = {
+  osmTileLayer: import.meta.env.VITE_OSM_TILELAYER,
+  osmAttribution: `&copy; <a href="${import.meta.env.VITE_OSM_ATTRIBUTION}">OpenStreetMap</a> contributors`,
+  historicalTileLayer: import.meta.env.VITE_HISTORICAL_TILELAYER,
+  // TODO: DELETE AND CREATE NEW KEY FOR VAULT
+  historicalTileLayerKey: "fIGLURh5nxHfE0ydIxke",
+  historicalAttribution: `<a href="${import.meta.env.VITE_HISTORICAL_ATTRIBUTION}">National Library of Scotland</a>`,
+};
+
+export const getStartinglocation = () => {
+  // prettier-ignore
+  const osGridSquares = [
+    "HU","HY","ND","NC","NB","NF","NG","NH",
+    "NJ","NO","NN","NM","NR","NS","NT","NZ",
+    "NY","NX","NY","NZ","TA","SE","SD","SH",
+    "SJ","SK","TF","TG","SN","SO","SP","TL",
+    "TM","TR","TQ","SU","ST","SS","SW","SX",
+    "NU"
+  ]
+
+  const getRandomThreeigitNumber = (): string => {
+    const value = Math.floor(Math.random() * 999);
+
+    return value.toString().padStart(3, "0");
+  };
+
+  const gridSquare: string =
+    osGridSquares[Math.floor(Math.random() * osGridSquares.length)];
+
+  return {
+    date: new Date(),
+    gridSquare,
+    easting: getRandomThreeigitNumber(),
+    northing: getRandomThreeigitNumber(),
+  };
+};
+
+// from os-transform.js
+// TODO: Is this fine to lift?
+/**
+ * Return easting + northing from an input grid reference.
+ * @param {string} gridref - The grid reference to be converted.
+ */
+export const fromGridRef = (gridref: string) => {
+  gridref = String(gridref).trim();
+
+  const gridLetters = "VWXYZQRSTULMNOPFGHJKABCDE";
+
+  const ref = gridref.toUpperCase().replace(/ /g, "");
+
+  const majorEasting = (gridLetters.indexOf(ref[0]) % 5) * 500000 - 1000000;
+  const majorNorthing =
+    Math.floor(gridLetters.indexOf(ref[0]) / 5) * 500000 - 500000;
+
+  const minorEasting = (gridLetters.indexOf(ref[1]) % 5) * 100000;
+  const minorNorthing = Math.floor(gridLetters.indexOf(ref[1]) / 5) * 100000;
+
+  const i = (ref.length - 2) / 2;
+  const m = Math.pow(10, 5 - i);
+
+  const e = majorEasting + minorEasting + Number(ref.substring(2, i + 2)) * m;
+  const n = majorNorthing + minorNorthing + Number(ref.substring(i + 2)) * m;
+
+  return { ea: e, no: n };
+};
