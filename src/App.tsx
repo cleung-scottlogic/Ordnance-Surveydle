@@ -2,16 +2,16 @@ import { useState } from "react";
 import "./App.css";
 import MapView from "./Map/MapView";
 import type { MapContainerProps } from "react-leaflet";
-import L, { type LatLngExpression } from "leaflet";
+import L, { LatLng, type LatLngExpression } from "leaflet";
 import { DataService, fromGridRef, getStartinglocation } from "./DataService";
 import { zoomLevels, type ZoomLevel } from "./Map/ZoomLevel";
-
-interface Guess {
-  location?: LatLngExpression;
-}
+import Progress from "./Progress/Progress";
 
 function App() {
-  const [guesses, setGuesses] = useState<LatLngExpression[]>([]);
+  const [guesses, setGuesses] = useState<LatLng[]>([]);
+  const [currentGuessLocation, setCurrentGuessLocation] = useState<
+    LatLng | undefined
+  >();
 
   const [startingLocale] = useState(getStartinglocation());
 
@@ -53,7 +53,13 @@ function App() {
 
   return (
     <>
-      <a>Guesses remaining = {5 - (guesses.length ?? 0)}</a>
+      <section className='header'>
+        <Progress
+          className='gameProgress'
+          answerLocation={new LatLng(origin.lat, origin.lng)}
+          guesses={guesses}
+        />
+      </section>
       <section id='center'>
         <MapView
           key={guesses.length}
@@ -68,12 +74,18 @@ function App() {
           tileLayer={DataService.osmTileLayer}
           attribution={DataService.osmAttribution}
           isMarkerEnabled={true}
+          setCurrentMarkerLocation={(location) =>
+            setCurrentGuessLocation(location)
+          }
         ></MapView>
         <button
           title='Submit'
+          disabled={!currentGuessLocation}
           onClick={() => {
-            setGuesses((guesses) => guesses.concat([{ lat: 0.0, lng: 0.0 }]));
-            setMinZoomLevel(() => zoomLevels[guesses.length]);
+            if (currentGuessLocation) {
+              setGuesses((guesses) => guesses.concat(currentGuessLocation));
+              setMinZoomLevel(() => zoomLevels[guesses.length + 1]);
+            }
           }}
         >
           {" "}

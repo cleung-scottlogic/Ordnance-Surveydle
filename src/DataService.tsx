@@ -1,4 +1,5 @@
-import OsGridRef from "https://cdn.jsdelivr.net/npm/geodesy@2/osgridref.js?url";
+// import OsGridRef from "https://cdn.jsdelivr.net/npm/geodesy@2/osgridref.js?url";
+import OsGridRef from "geodesy/osgridref";
 
 interface DataService {
   osmTileLayer: string;

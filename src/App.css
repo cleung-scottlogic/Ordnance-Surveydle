@@ -32,3 +32,10 @@
   }
 }
 
+.header{
+    display: flex;
+    flex-direction: column;
+      place-items: center;
+  height: 200px;
+}
+

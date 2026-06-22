@@ -1,0 +1,5 @@
+.guessEntry{
+    display: flex;
+    align-self: auto;
+    width: 50%;
+}
