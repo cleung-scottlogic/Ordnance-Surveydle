@@ -7,8 +7,6 @@ interface ProgressProps {
 }
 
 function Progress(props: ProgressProps) {
-  const lastGuess = props.guesses[props.guesses.length - 1];
-
   const getDistanceToAnswer = (guess: LatLng): number | undefined => {
     return guess ? guess.distanceTo(props.answerLocation) / 1000 : void 0;
   };

@@ -13,6 +13,7 @@ interface MapProps {
   attribution?: string;
   isMarkerEnabled?: boolean;
   fixedMarker?: LatLng;
+  existingMarkers?: LatLng[];
   mapContainerProps: MapContainerProps;
   setCurrentMarkerLocation?: (guess: LatLng) => void;
 }
@@ -26,6 +27,7 @@ function MapView(props: MapProps) {
         {props.isMarkerEnabled ? (
           <LocationMarker
             setCurrentLocation={props.setCurrentMarkerLocation!}
+            existingLocations={props.existingMarkers}
           />
         ) : null}
       </MapContainer>

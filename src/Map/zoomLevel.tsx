@@ -3,14 +3,6 @@ export interface ZoomLevel {
   boundsFactor: number;
 }
 
-interface ZoomLevels {
-  one: ZoomLevel;
-  two: ZoomLevel;
-  three: ZoomLevel;
-  four: ZoomLevel;
-  five: ZoomLevel;
-}
-
 export const zoomLevels: ZoomLevel[] = [
   { zoom: 17, boundsFactor: 0.006 },
   { zoom: 15, boundsFactor: 0.012 },

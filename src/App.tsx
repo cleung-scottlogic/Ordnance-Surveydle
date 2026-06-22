@@ -74,6 +74,7 @@ function App() {
           tileLayer={DataService.osmTileLayer}
           attribution={DataService.osmAttribution}
           isMarkerEnabled={true}
+          existingMarkers={guesses}
           setCurrentMarkerLocation={(location) =>
             setCurrentGuessLocation(location)
           }
