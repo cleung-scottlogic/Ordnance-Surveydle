@@ -15,23 +15,18 @@ function App() {
 
   const [startingLocale] = useState(getStartinglocation());
 
-  const maxZoomLevel = zoomLevels[0];
-  const minZoomLevel = zoomLevels[guesses.length];
-
-  // const [minZoomLevel, setMinZoomLevel] = useState<ZoomLevel>(zoomLevels[0]);
-
   const origin = {
     lat: startingLocale.lat,
     lng: startingLocale.lng,
   };
 
-  const boundFactor = minZoomLevel.boundsFactor * 2;
+  const boundFactor = zoomLevels[guesses.length].boundsFactor * 2;
 
   const historicalMapContainerProps: MapContainerProps = {
     center: origin,
-    minZoom: minZoomLevel.zoom,
-    maxZoom: maxZoomLevel.zoom,
-    zoom: minZoomLevel.zoom,
+    minZoom: zoomLevels[guesses.length].zoom,
+    maxZoom: zoomLevels[0].zoom,
+    zoom: zoomLevels[guesses.length].zoom,
     dragging: true,
     doubleClickZoom: false,
     zoomControl: true,
@@ -71,14 +66,14 @@ function App() {
           mapContainerProps={historicalMapContainerProps}
           tileLayer={`${DataService.historicalTileLayer}${DataService.historicalTileLayerKey}`}
           attribution={DataService.historicalAttribution}
-          isMarkerEnabled={true}
+          isCustomMarkerEnabled={false}
           fixedMarker={new L.LatLng(origin.lat, origin.lng)}
         ></MapView>
         <MapView
           mapContainerProps={osmMapContainerProps}
           tileLayer={DataService.osmTileLayer}
           attribution={DataService.osmAttribution}
-          isMarkerEnabled={true}
+          isCustomMarkerEnabled={true}
           existingMarkers={guesses}
           setCurrentMarkerLocation={(location) =>
             setCurrentGuessLocation(location)
@@ -90,7 +85,6 @@ function App() {
           onClick={() => {
             if (currentGuessLocation) {
               setGuesses((guesses) => guesses.concat(currentGuessLocation));
-              // setMinZoomLevel(() => zoomLevels[guesses.length + 1]);
             }
           }}
         >

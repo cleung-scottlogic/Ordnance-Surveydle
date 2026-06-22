@@ -11,7 +11,7 @@ import type { LatLng, LatLngExpression } from "leaflet";
 interface MapProps {
   tileLayer: string;
   attribution?: string;
-  isMarkerEnabled?: boolean;
+  isCustomMarkerEnabled?: boolean;
   fixedMarker?: LatLng;
   existingMarkers?: LatLng[];
   mapContainerProps: MapContainerProps;
@@ -24,7 +24,7 @@ function MapView(props: MapProps) {
       <MapContainer {...props.mapContainerProps}>
         <TileLayer attribution={props.attribution} url={props.tileLayer} />
         {props.fixedMarker ? <Marker position={props.fixedMarker} /> : null}
-        {props.isMarkerEnabled ? (
+        {props.isCustomMarkerEnabled ? (
           <LocationMarker
             setCurrentLocation={props.setCurrentMarkerLocation!}
             existingLocations={props.existingMarkers}
