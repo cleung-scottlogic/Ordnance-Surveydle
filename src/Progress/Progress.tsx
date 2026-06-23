@@ -1,5 +1,4 @@
-import type { LatLng, LatLngExpression, Map } from "leaflet";
-import { useCallback, useState } from "react";
+import type { LatLng } from 'leaflet';
 
 interface ProgressProps {
   answerLocation: LatLng;
@@ -17,8 +16,8 @@ function Progress(props: ProgressProps) {
     return (
       <ul>
         {props.guesses.map((g, i) => (
-          <li className='guessEntry' key={i}>
-            Last guess was {getDistanceToAnswer(g)?.toFixed(2)} Km away{" "}
+          <li className="guessEntry" key={i}>
+            Last guess was {getDistanceToAnswer(g)?.toFixed(2)} Km away{' '}
           </li>
         ))}
       </ul>

@@ -2,10 +2,10 @@ import { useState } from "react";
 import "./App.css";
 import MapView from "./Map/MapView";
 import type { MapContainerProps } from "react-leaflet";
-import L, { LatLng, type LatLngExpression } from "leaflet";
-import { DataService, fromGridRef, getStartinglocation } from "./DataService";
-import { zoomLevels, type ZoomLevel } from "./Map/ZoomLevel";
+import L, { LatLng } from "leaflet";
+import { DataService, getStartinglocation } from "./DataService";
 import Progress from "./Progress/Progress";
+import { ZOOM_LEVELS } from "./Map/ZoomLevel";
 
 function App() {
   const [guesses, setGuesses] = useState<LatLng[]>([]);
@@ -20,13 +20,13 @@ function App() {
     lng: startingLocale.lng,
   };
 
-  const boundFactor = zoomLevels[guesses.length].boundsFactor * 2;
+  const boundFactor = ZOOM_LEVELS[guesses.length].boundsFactor * 2;
 
   const historicalMapContainerProps: MapContainerProps = {
     center: origin,
-    minZoom: zoomLevels[guesses.length].zoom,
-    maxZoom: zoomLevels[0].zoom,
-    zoom: zoomLevels[guesses.length].zoom,
+    minZoom: ZOOM_LEVELS[guesses.length].zoom,
+    maxZoom: ZOOM_LEVELS[0].zoom,
+    zoom: ZOOM_LEVELS[guesses.length].zoom,
     dragging: true,
     doubleClickZoom: false,
     zoomControl: true,
@@ -55,7 +55,6 @@ function App() {
     <>
       <section className='header'>
         <Progress
-          className='gameProgress'
           answerLocation={new LatLng(origin.lat, origin.lng)}
           guesses={guesses}
         />
