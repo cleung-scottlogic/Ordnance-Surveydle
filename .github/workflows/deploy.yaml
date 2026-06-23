@@ -2,9 +2,9 @@ name: Upload Ordnance Surveydle to S3 bucket
 
 on:
   push:
-    branches: ["prod"]
+    branches: ['prod']
   pull_request:
-    branches: ["prod"]
+    branches: ['prod']
 
 jobs:
   build:
@@ -17,7 +17,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: "24"
+          node-version: '24'
 
       - name: Install dependencies
         run: npm install

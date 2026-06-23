@@ -1,12 +1,7 @@
-import {
-  MapContainer,
-  Marker,
-  TileLayer,
-  type MapContainerProps,
-} from "react-leaflet";
-import "./MapView.css";
-import LocationMarker from "./LocationMarker";
-import type { LatLng, LatLngExpression } from "leaflet";
+import { MapContainer, Marker, TileLayer, type MapContainerProps } from 'react-leaflet';
+import './MapView.css';
+import LocationMarker from './LocationMarker';
+import type { LatLng } from 'leaflet';
 
 interface MapProps {
   tileLayer: string;

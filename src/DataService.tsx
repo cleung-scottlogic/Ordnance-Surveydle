@@ -1,5 +1,6 @@
 // import OsGridRef from "https://cdn.jsdelivr.net/npm/geodesy@2/osgridref.js?url";
-import OsGridRef from "geodesy/osgridref";
+// @ts-expect-error
+import OsGridRef from 'geodesy/osgridref';
 
 interface DataService {
   osmTileLayer: string;
@@ -23,7 +24,7 @@ export const DataService: DataService = {
   osmAttribution: `&copy; <a href="${import.meta.env.VITE_OSM_ATTRIBUTION}">OpenStreetMap</a> contributors`,
   historicalTileLayer: import.meta.env.VITE_HISTORICAL_TILELAYER,
   // TODO: DELETE AND CREATE NEW KEY FOR VAULT
-  historicalTileLayerKey: "fIGLURh5nxHfE0ydIxke",
+  historicalTileLayerKey: 'fIGLURh5nxHfE0ydIxke',
   historicalAttribution: `<a href="${import.meta.env.VITE_HISTORICAL_ATTRIBUTION}">National Library of Scotland</a>`,
 };
 
@@ -41,11 +42,10 @@ export const getStartinglocation = (): StartingLocation => {
   const getRandomThreeDigitNumber = (): string => {
     const value = Math.floor(Math.random() * 999);
 
-    return value.toString().padStart(3, "0");
+    return value.toString().padStart(3, '0');
   };
 
-  const gridReference: string =
-    osGridSquares[Math.floor(Math.random() * osGridSquares.length)];
+  const gridReference: string = osGridSquares[Math.floor(Math.random() * osGridSquares.length)];
   const easting = getRandomThreeDigitNumber();
   const northing = getRandomThreeDigitNumber();
 
@@ -73,13 +73,12 @@ export const getStartinglocation = (): StartingLocation => {
 export const fromGridRef = (gridref: string) => {
   gridref = String(gridref).trim();
 
-  const gridLetters = "VWXYZQRSTULMNOPFGHJKABCDE";
+  const gridLetters = 'VWXYZQRSTULMNOPFGHJKABCDE';
 
-  const ref = gridref.toUpperCase().replace(/ /g, "");
+  const ref = gridref.toUpperCase().replace(/ /g, '');
 
   const majorEasting = (gridLetters.indexOf(ref[0]) % 5) * 500000 - 1000000;
-  const majorNorthing =
-    Math.floor(gridLetters.indexOf(ref[0]) / 5) * 500000 - 500000;
+  const majorNorthing = Math.floor(gridLetters.indexOf(ref[0]) / 5) * 500000 - 500000;
 
   const minorEasting = (gridLetters.indexOf(ref[1]) % 5) * 100000;
   const minorNorthing = Math.floor(gridLetters.indexOf(ref[1]) / 5) * 100000;
