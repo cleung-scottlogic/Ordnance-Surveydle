@@ -24,6 +24,7 @@ function EndScreen({ open, startingMarker }: { open: boolean; startingMarker?: L
             tileLayer={DataService.osmTileLayer}
             attribution={DataService.osmAttribution}
             fixedMarker={startingMarker}
+            zoomToFixedMarker={14}
           />
         </div>
       </Dialog>
