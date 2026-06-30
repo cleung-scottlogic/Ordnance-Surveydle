@@ -35,7 +35,6 @@ function Progress(props: ProgressProps) {
     for (let i = 0; i < 5; i++) {
       placeholders = placeholders.concat(
         <div className="placeholder">
-          {/* <span className='magnifyingGlass'>&#128270;</span> */}
           <div className="rectangle">{getContent(i)}</div>
         </div>,
       );
@@ -44,16 +43,7 @@ function Progress(props: ProgressProps) {
     return <>{placeholders}</>;
   };
 
-  return (
-    <>
-      {/* <span>Guesses remaining = {5 - (props.guesses.length ?? 0)}</span> */}
-      {getGuessPlaceholder()}
-      {/* <div>
-        guess history:
-        {getGuessHistory()}
-      </div> */}
-    </>
-  );
+  return <>{getGuessPlaceholder()}</>;
 }
 
 export default Progress;

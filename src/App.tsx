@@ -85,7 +85,11 @@ function App() {
           existingMarkers={guesses}
           setCurrentMarkerLocation={(location) => setCurrentGuessLocation(location)}
         ></MapView>
-        <EndScreen open={true} startingMarker={new L.LatLng(origin.lat, origin.lng)} />
+        <EndScreen
+          open={guesses.length >= 5}
+          startingMarker={new L.LatLng(origin.lat, origin.lng)}
+          guesses={guesses}
+        />
       </section>
     </>
   );

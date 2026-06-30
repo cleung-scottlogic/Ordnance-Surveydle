@@ -14,20 +14,46 @@ interface MapProps {
   setCurrentMarkerLocation?: (guess: LatLng) => void;
   /** optional zoom level to use when zooming to fixedMarker */
   zoomToFixedMarker?: number;
+  /** explicitly enable programmatic fly/pan-to when a fixed marker is present */
+  autoFlyToFixedMarker?: boolean;
 }
 
-function MapController({ fixedMarker, zoom }: { fixedMarker?: LatLng; zoom?: number }) {
+function MapController({
+  fixedMarker,
+  zoom,
+  autoFly,
+}: {
+  fixedMarker?: LatLng;
+  zoom?: number;
+  autoFly?: boolean;
+}) {
   const map = useMap();
 
   useEffect(() => {
     if (!map || !fixedMarker) return;
+
     try {
-      // Use flyTo for a smooth zoom animation; fallback to setView if not supported
-      map.flyTo([fixedMarker.lat, fixedMarker.lng], zoom ?? 13);
+      map.invalidateSize();
     } catch (e) {
-      map.setView([fixedMarker.lat, fixedMarker.lng], zoom ?? 13);
+      // ignore
     }
-  }, [map, fixedMarker, zoom]);
+
+    if (!autoFly) return;
+
+    if (typeof zoom !== 'undefined') {
+      try {
+        map.flyTo([fixedMarker.lat, fixedMarker.lng], zoom);
+      } catch (e) {
+        map.setView([fixedMarker.lat, fixedMarker.lng], zoom);
+      }
+    } else {
+      try {
+        map.panTo([fixedMarker.lat, fixedMarker.lng]);
+      } catch (e) {
+        map.setView([fixedMarker.lat, fixedMarker.lng], map.getZoom());
+      }
+    }
+  }, [map, fixedMarker, zoom, autoFly]);
 
   return null;
 }
@@ -39,7 +65,11 @@ function MapView(props: MapProps) {
         <TileLayer attribution={props.attribution} url={props.tileLayer} />
         {props.fixedMarker ? <Marker position={props.fixedMarker} /> : null}
         {props.fixedMarker ? (
-          <MapController fixedMarker={props.fixedMarker} zoom={props.zoomToFixedMarker} />
+          <MapController
+            fixedMarker={props.fixedMarker}
+            zoom={props.zoomToFixedMarker}
+            autoFly={props.autoFlyToFixedMarker}
+          />
         ) : null}
         {props.isCustomMarkerEnabled ? (
           <LocationMarker
