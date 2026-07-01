@@ -28,16 +28,20 @@ export const DataService: DataService = {
   historicalAttribution: `<a href="${import.meta.env.VITE_HISTORICAL_ATTRIBUTION}">National Library of Scotland</a>`,
 };
 
+// alternative generation: list of towns and villages converted to grid refernec with random amount added
 export const getStartinglocation = (): StartingLocation => {
   // prettier-ignore
   const osGridSquares = [
-    "HU","HY","ND","NC","NB","NF","NG","NH",
+    "HU","NC","NG","NH",
     "NJ","NO","NN","NM","NR","NS","NT","NZ",
-    "NY","NX","NY","NZ","TA","SE","SD","SH",
-    "SJ","SK","TF","TG","SN","SO","SP","TL",
-    "TM","TR","TQ","SU","ST","SS","SW","SX",
-    "NU"
+    "NY","NX","NY","NZ","SE","SD","SH",
+    "SJ","SK","TF","SN","SO","SP","TL",
+    "TM","TQ","SU","ST","SS","SX"
+
   ]
+
+  // grid references that contain too much sea
+  // ,"HY",,"ND","NB",,"NF","TA","TG","TR","SW",    "NU"
 
   const getRandomThreeDigitNumber = (): string => {
     const value = Math.floor(Math.random() * 999);
@@ -64,30 +68,50 @@ export const getStartinglocation = (): StartingLocation => {
   };
 };
 
-// from os-transform.js
-// TODO: Is this fine to lift?
-/**
- * Return easting + northing from an input grid reference.
- * @param {string} gridref - The grid reference to be converted.
- */
-export const fromGridRef = (gridref: string) => {
-  gridref = String(gridref).trim();
+const seededRandom = (seed: number): number => {
+  const x = Math.sin(seed) * 10000;
+  return x - Math.floor(x);
+};
 
-  const gridLetters = 'VWXYZQRSTULMNOPFGHJKABCDE';
+export const getDailyStartingLocation = (): StartingLocation => {
+  // prettier-ignore
+  const osGridSquares = [
+    "HU","NC","NG","NH",
+    "NJ","NO","NN","NM","NR","NS","NT","NZ",
+    "NY","NX","NY","NZ","SE","SD","SH",
+    "SJ","SK","TF","SN","SO","SP","TL",
+    "TM","TQ","SU","ST","SS","SX"
+  ];
 
-  const ref = gridref.toUpperCase().replace(/ /g, '');
+  // Convert UTC to UK time (GMT/BST) and use that date as seed
+  const utcNow = new Date();
+  const ukDate = new Date(utcNow.toLocaleString('en-GB', { timeZone: 'Europe/London' }));
 
-  const majorEasting = (gridLetters.indexOf(ref[0]) % 5) * 500000 - 1000000;
-  const majorNorthing = Math.floor(gridLetters.indexOf(ref[0]) / 5) * 500000 - 500000;
+  const dateString = `${ukDate.getFullYear()}-${ukDate.getMonth() + 1}-${ukDate.getDate()}`;
+  const seed = dateString.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
 
-  const minorEasting = (gridLetters.indexOf(ref[1]) % 5) * 100000;
-  const minorNorthing = Math.floor(gridLetters.indexOf(ref[1]) / 5) * 100000;
+  // Generate deterministic random values from the seed
+  const gridIndex = Math.floor(seededRandom(seed) * osGridSquares.length);
+  const eastingSeed = seed + 1;
+  const northingSeed = seed + 2;
 
-  const i = (ref.length - 2) / 2;
-  const m = Math.pow(10, 5 - i);
+  const easting = Math.floor(seededRandom(eastingSeed) * 999)
+    .toString()
+    .padStart(3, '0');
+  const northing = Math.floor(seededRandom(northingSeed) * 999)
+    .toString()
+    .padStart(3, '0');
 
-  const e = majorEasting + minorEasting + Number(ref.substring(2, i + 2)) * m;
-  const n = majorNorthing + minorNorthing + Number(ref.substring(i + 2)) * m;
+  const gridReference = osGridSquares[gridIndex];
+  const gridRef = OsGridRef.parse(gridReference + easting + northing);
+  const wgs84 = gridRef.toLatLon();
 
-  return { ea: e, no: n };
+  return {
+    date: ukDate,
+    gridReference,
+    easting,
+    northing,
+    lat: wgs84._lat,
+    lng: wgs84._lon,
+  };
 };

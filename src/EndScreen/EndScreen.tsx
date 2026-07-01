@@ -28,6 +28,7 @@ function EndScreen({
       // distanceTo returns meters; convert to km to match Progress.tsx
       return guess.distanceTo(startingMarker) / 1000;
     } catch (e) {
+      console.log('getDistanceToAnswer: failed to calculate distance', e);
       return undefined;
     }
   };

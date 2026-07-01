@@ -3,7 +3,7 @@ import './App.css';
 import MapView from './Map/MapView';
 import type { MapContainerProps } from 'react-leaflet';
 import L, { LatLng } from 'leaflet';
-import { DataService, getStartinglocation } from './DataService';
+import { DataService, getDailyStartingLocation } from './DataService';
 import Progress from './Progress/Progress';
 import { ZOOM_LEVELS } from './Map/ZoomLevel';
 import EndScreen from './EndScreen/EndScreen';
@@ -12,7 +12,7 @@ function App() {
   const [guesses, setGuesses] = useState<LatLng[]>([]);
   const [currentGuessLocation, setCurrentGuessLocation] = useState<LatLng | undefined>();
 
-  const [startingLocale] = useState(getStartinglocation());
+  const [startingLocale] = useState(getDailyStartingLocation());
 
   const origin = {
     lat: startingLocale.lat,

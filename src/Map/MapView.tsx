@@ -35,6 +35,7 @@ function MapController({
     try {
       map.invalidateSize();
     } catch (e) {
+      console.log('MapController: map.invalidateSize() failed', e);
       // ignore
     }
 
@@ -44,12 +45,14 @@ function MapController({
       try {
         map.flyTo([fixedMarker.lat, fixedMarker.lng], zoom);
       } catch (e) {
+        console.log('MapController: map.flyTo() failed, falling back to setView()', e);
         map.setView([fixedMarker.lat, fixedMarker.lng], zoom);
       }
     } else {
       try {
         map.panTo([fixedMarker.lat, fixedMarker.lng]);
       } catch (e) {
+        console.log('MapController: map.panTo() failed, falling back to setView()', e);
         map.setView([fixedMarker.lat, fixedMarker.lng], map.getZoom());
       }
     }
