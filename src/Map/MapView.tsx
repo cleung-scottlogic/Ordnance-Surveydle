@@ -16,6 +16,8 @@ interface MapProps {
   zoomToFixedMarker?: number;
   /** explicitly enable programmatic fly/pan-to when a fixed marker is present */
   autoFlyToFixedMarker?: boolean;
+  /** closest marker to highlight in LocationMarker */
+  closestMarker?: LatLng;
 }
 
 function MapController({
@@ -74,10 +76,11 @@ function MapView(props: MapProps) {
             autoFly={props.autoFlyToFixedMarker}
           />
         ) : null}
-        {props.isCustomMarkerEnabled ? (
+        {props.isCustomMarkerEnabled || props.existingMarkers ? (
           <LocationMarker
-            setCurrentLocation={props.setCurrentMarkerLocation!}
+            setCurrentLocation={props.setCurrentMarkerLocation || (() => {})}
             existingLocations={props.existingMarkers}
+            closestLocation={props.closestMarker}
           />
         ) : null}
       </MapContainer>

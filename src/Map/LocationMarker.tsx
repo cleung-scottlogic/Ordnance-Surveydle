@@ -1,10 +1,11 @@
-import { type LatLng } from 'leaflet';
-import { useState } from 'react';
-import { Marker, useMapEvents } from 'react-leaflet';
+import { type LatLng } from "leaflet";
+import { useState } from "react";
+import { Marker, useMapEvents } from "react-leaflet";
 
 interface LocationMarkerProps {
   existingLocations: LatLng[] | undefined;
   setCurrentLocation: (setCurrentLocation: LatLng) => void;
+  closestLocation?: LatLng;
 }
 
 function LocationMarker(props: LocationMarkerProps) {
@@ -20,9 +21,12 @@ function LocationMarker(props: LocationMarkerProps) {
     if (props.existingLocations === void 0) return null;
     return (
       <>
-        {props.existingLocations.map((l: LatLng) => (
-          <Marker opacity={0.4} position={l} />
-        ))}
+        {props.existingLocations.map((l: LatLng, idx) => {
+          const isClosest =
+            props.closestLocation && l.equals(props.closestLocation);
+          const opacity = isClosest ? 1 : 0.4;
+          return <Marker key={idx} opacity={opacity} position={l} />;
+        })}
       </>
     );
   };
