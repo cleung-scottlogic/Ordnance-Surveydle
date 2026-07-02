@@ -60,17 +60,13 @@ function EndScreen({
     return '🟥';
   };
 
+  const gameUrl = 'https://ordnance-surveydle.s3.eu-west-2.amazonaws.com/index.html';
+
   const buildShareText = (): string => {
     const totalScore = getTotalScore();
     const lines = [`MapGame — ${totalScore} pts`];
 
     if (guesses && guesses.length > 0) {
-      const emojiRow = guesses
-        .map((g) => getScoreEmoji(getScoreForGuess(g, startingMarker) ?? 0))
-        .join('');
-      lines.push(emojiRow);
-      lines.push('');
-
       guesses.forEach((g, i) => {
         const km = getDistanceKm(g, startingMarker);
         const score = getScoreForGuess(g, startingMarker);
@@ -82,6 +78,9 @@ function EndScreen({
     } else {
       lines.push('No guesses were made.');
     }
+
+    lines.push('');
+    lines.push(`[Ordnance Surveydle](${gameUrl})`);
 
     return lines.join('\n');
   };
