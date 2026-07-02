@@ -4,6 +4,7 @@ import './EndScreen.css';
 import { type MapContainerProps } from 'react-leaflet';
 import type { LatLng } from 'leaflet';
 import { DataService } from '../DataService';
+import { getDistanceKm, getDistanceMeters, getScoreForGuess } from '../ScoringService';
 
 import MapView from '../Map/MapView';
 
@@ -22,25 +23,14 @@ function EndScreen({
     zoom: 7,
   };
 
-  const getDistanceToAnswer = (guess?: LatLng): number | undefined => {
-    if (!startingMarker || !guess) return undefined;
-    try {
-      // distanceTo returns meters; convert to km to match Progress.tsx
-      return guess.distanceTo(startingMarker) / 1000;
-    } catch (e) {
-      console.log('getDistanceToAnswer: failed to calculate distance', e);
-      return undefined;
-    }
-  };
-
   const getClosestGuess = (): LatLng | undefined => {
     if (!startingMarker || !guesses || guesses.length === 0) return undefined;
 
     let closest = guesses[0];
-    let minDistance = guesses[0].distanceTo(startingMarker);
+    let minDistance = getDistanceMeters(guesses[0], startingMarker) ?? Infinity;
 
     for (let i = 1; i < guesses.length; i++) {
-      const distance = guesses[i].distanceTo(startingMarker);
+      const distance = getDistanceMeters(guesses[i], startingMarker) ?? Infinity;
       if (distance < minDistance) {
         minDistance = distance;
         closest = guesses[i];
@@ -56,13 +46,15 @@ function EndScreen({
     if (!guesses || guesses.length === 0) return <p>No guesses were made.</p>;
 
     const items = guesses.map((g, i) => {
-      const km = getDistanceToAnswer(g);
+      const km = getDistanceKm(g, startingMarker);
+      const score = getScoreForGuess(g, startingMarker);
       const distLabel = km === undefined ? '-' : `${km.toFixed(2)} km away`;
-      const isClosest = closestGuess && g.equals(closestGuess) ? ' (Closest)' : '';
+      const scoreLabel = score !== undefined ? ` - ${score} pts` : '';
+      const isClosest = closestGuess && g.equals(closestGuess);
       return (
-        <div key={i} className="guess-item">
+        <div key={i} className={`guess-item ${isClosest ? 'closest' : ''}`}>
           <strong>Guess {i + 1}:</strong> {distLabel}
-          {isClosest}
+          {scoreLabel}
         </div>
       );
     });

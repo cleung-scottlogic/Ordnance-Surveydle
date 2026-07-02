@@ -1,5 +1,6 @@
 import type { LatLng } from 'leaflet';
 import type { JSX } from 'react/jsx-runtime';
+import { getDistanceKm, getScoreForGuess } from '../ScoringService';
 
 interface ProgressProps {
   answerLocation: LatLng;
@@ -7,16 +8,16 @@ interface ProgressProps {
 }
 
 function Progress(props: ProgressProps) {
-  const getDistanceToAnswer = (guess: LatLng): number | undefined => {
-    return guess ? guess.distanceTo(props.answerLocation) / 1000 : void 0;
-  };
-
   const getGuess = (i: number): JSX.Element | null => {
     if (i > props.guesses.length - 1) return null;
 
+    const distance = getDistanceKm(props.guesses[i], props.answerLocation);
+    const score = getScoreForGuess(props.guesses[i], props.answerLocation);
+
     return (
       <>
-        <span className="guess">{getDistanceToAnswer(props.guesses[i])?.toFixed(2)} km away</span>
+        <span className="guess">{distance?.toFixed(2)} km away</span>
+        {score !== undefined && <span className="score">{score} pts</span>}
       </>
     );
   };

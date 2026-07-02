@@ -32,16 +32,29 @@
     border: 1px solid #6b6375;
     border-radius: 5px;
     background-color: #ded8c2;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-evenly;
+    padding: 0;
+    box-sizing: border-box;
   }
 
   .magnifyingGlass {
     align-self: center;
     display: inline;
+    margin: 0 auto;
   }
 
   .guess {
     color: #9d00ff;
     font-weight: 400;
+  }
+
+  .score {
+    color: #1b998b;
+    font-weight: bold;
+    font-size: 0.85em;
   }
 
   button {
