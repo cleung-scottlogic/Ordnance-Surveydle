@@ -7,10 +7,12 @@ import { DataService, getDailyStartingLocation } from './DataService';
 import Progress from './Progress/Progress';
 import { ZOOM_LEVELS } from './Map/ZoomLevel';
 import EndScreen from './EndScreen/EndScreen';
+import { getScoreForGuess } from './ScoringService';
 
 function App() {
   const [guesses, setGuesses] = useState<LatLng[]>([]);
   const [currentGuessLocation, setCurrentGuessLocation] = useState<LatLng | undefined>();
+  const [endScreenOpen, setEndScreenOpen] = useState(false);
 
   const [startingLocale] = useState(getDailyStartingLocation());
 
@@ -18,6 +20,12 @@ function App() {
     lat: startingLocale.lat,
     lng: startingLocale.lng,
   };
+
+  const answerLocation = new LatLng(origin.lat, origin.lng);
+
+  const hasPerfectGuess = guesses.some((guess) => getScoreForGuess(guess, answerLocation) === 1000);
+
+  const isGameOver = guesses.length >= 5 || hasPerfectGuess;
 
   const boundFactor = ZOOM_LEVELS[guesses.length].boundsFactor * 4;
 
@@ -49,7 +57,19 @@ function App() {
   };
 
   const isSubmitDisabled = (): boolean => {
-    return !currentGuessLocation || guesses.length === 5;
+    return !currentGuessLocation || isGameOver;
+  };
+
+  const handleSubmit = () => {
+    if (!currentGuessLocation) return;
+
+    const updatedGuesses = guesses.concat(currentGuessLocation);
+    setGuesses(updatedGuesses);
+
+    const isPerfect = getScoreForGuess(currentGuessLocation, answerLocation) === 1000;
+    if (updatedGuesses.length >= 5 || isPerfect) {
+      setEndScreenOpen(true);
+    }
   };
 
   return (
@@ -64,17 +84,19 @@ function App() {
           fixedMarker={new L.LatLng(origin.lat, origin.lng)}
         ></MapView>
         <section id="progress">
-          <Progress answerLocation={new LatLng(origin.lat, origin.lng)} guesses={guesses} />
+          <Progress answerLocation={answerLocation} guesses={guesses} />
           <button
-            title="Submit"
-            disabled={isSubmitDisabled()}
+            title={isGameOver ? 'Results' : 'Submit'}
+            disabled={isGameOver ? false : isSubmitDisabled()}
             onClick={() => {
-              if (currentGuessLocation) {
-                setGuesses((guesses) => guesses.concat(currentGuessLocation));
+              if (isGameOver) {
+                setEndScreenOpen(true);
+              } else {
+                handleSubmit();
               }
             }}
           >
-            Submit
+            {isGameOver ? 'Results' : 'Submit'}
           </button>
         </section>
         <MapView
@@ -86,7 +108,8 @@ function App() {
           setCurrentMarkerLocation={(location) => setCurrentGuessLocation(location)}
         ></MapView>
         <EndScreen
-          open={guesses.length >= 5}
+          open={endScreenOpen}
+          onClose={() => setEndScreenOpen(false)}
           startingMarker={new L.LatLng(origin.lat, origin.lng)}
           guesses={guesses}
         />

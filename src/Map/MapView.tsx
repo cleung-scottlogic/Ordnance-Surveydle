@@ -1,4 +1,4 @@
-import { MapContainer, Marker, TileLayer, useMap, type MapContainerProps } from 'react-leaflet';
+import { MapContainer, TileLayer, useMap, type MapContainerProps } from 'react-leaflet';
 import './MapView.css';
 import LocationMarker from './LocationMarker';
 import type { LatLng } from 'leaflet';
@@ -68,7 +68,6 @@ function MapView(props: MapProps) {
     <>
       <MapContainer {...props.mapContainerProps}>
         <TileLayer attribution={props.attribution} url={props.tileLayer} />
-        {props.fixedMarker ? <Marker position={props.fixedMarker} /> : null}
         {props.fixedMarker ? (
           <MapController
             fixedMarker={props.fixedMarker}
@@ -76,11 +75,13 @@ function MapView(props: MapProps) {
             autoFly={props.autoFlyToFixedMarker}
           />
         ) : null}
-        {props.isCustomMarkerEnabled || props.existingMarkers ? (
+        {props.fixedMarker || props.isCustomMarkerEnabled || props.existingMarkers?.length ? (
           <LocationMarker
             setCurrentLocation={props.setCurrentMarkerLocation || (() => {})}
             existingLocations={props.existingMarkers}
             closestLocation={props.closestMarker}
+            correctLocation={props.fixedMarker}
+            isInteractive={props.isCustomMarkerEnabled}
           />
         ) : null}
       </MapContainer>
