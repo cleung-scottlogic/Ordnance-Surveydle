@@ -3,14 +3,14 @@
  *
  * Scoring rules:
  * - 0-100 meters: 1000 points (perfect)
- * - 100 meters - 200 km: Linear interpolation from 1000 to 0
- * - 200+ km: 0 points
+ * - 100 meters - 300 km: Linear interpolation from 1000 to 0
+ * - 300+ km: 0 points
  */
 
 import type { LatLng } from 'leaflet';
 
 const PERFECT_DISTANCE_M = 100; // 100 meters
-const ZERO_DISTANCE_M = 200000; // 200 km in meters
+const ZERO_DISTANCE_M = 300000; // 300 km in meters
 const MAX_SCORE = 1000;
 const MIN_SCORE = 0;
 
