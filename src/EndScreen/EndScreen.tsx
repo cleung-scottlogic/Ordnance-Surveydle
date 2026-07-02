@@ -47,9 +47,9 @@ function EndScreen({
 
   const closestGuess = getClosestGuess();
 
-  const getTotalScore = (): number => {
-    if (!guesses) return 0;
-    return guesses.reduce((total, g) => total + (getScoreForGuess(g, startingMarker) ?? 0), 0);
+  const getBestScore = (): number => {
+    if (!guesses || guesses.length === 0) return 0;
+    return guesses.reduce((best, g) => Math.max(best, getScoreForGuess(g, startingMarker) ?? 0), 0);
   };
 
   const getScoreEmoji = (score: number): string => {
@@ -63,8 +63,8 @@ function EndScreen({
   const gameUrl = 'https://ordnance-surveydle.s3.eu-west-2.amazonaws.com/index.html';
 
   const buildShareText = (): string => {
-    const totalScore = getTotalScore();
-    const lines = [`MapGame — ${totalScore} pts`];
+    const bestScore = getBestScore();
+    const lines = [`[Ordnance Surveydle](${gameUrl}) — ${bestScore} pts`];
 
     if (guesses && guesses.length > 0) {
       guesses.forEach((g, i) => {
@@ -78,9 +78,6 @@ function EndScreen({
     } else {
       lines.push('No guesses were made.');
     }
-
-    lines.push('');
-    lines.push(`[Ordnance Surveydle](${gameUrl})`);
 
     return lines.join('\n');
   };
