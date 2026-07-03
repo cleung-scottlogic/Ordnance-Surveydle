@@ -69,4 +69,9 @@ export function getScoreForGuess(guess?: LatLng, answer?: LatLng): number | unde
   return meters !== undefined ? calculateScore(meters) : undefined;
 }
 
-export default { calculateScore, getDistanceMeters, getDistanceKm, getScoreForGuess };
+export default {
+  calculateScore,
+  getDistanceMeters,
+  getDistanceKm,
+  getScoreForGuess,
+};
