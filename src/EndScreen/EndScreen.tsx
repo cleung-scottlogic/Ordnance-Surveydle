@@ -82,29 +82,72 @@ function EndScreen({
     return lines.join('\n');
   };
 
+  const copyWithFallback = (text: string): boolean => {
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    // Keep it out of view but still selectable/focusable across browsers.
+    textarea.style.position = 'fixed';
+    textarea.style.top = '0';
+    textarea.style.left = '0';
+    textarea.style.width = '1px';
+    textarea.style.height = '1px';
+    textarea.style.padding = '0';
+    textarea.style.border = 'none';
+    textarea.style.outline = 'none';
+    textarea.style.boxShadow = 'none';
+    textarea.style.background = 'transparent';
+    textarea.setAttribute('readonly', '');
+    document.body.appendChild(textarea);
+
+    const selection = document.getSelection();
+    const previousRange = selection && selection.rangeCount > 0 ? selection.getRangeAt(0) : null;
+
+    textarea.focus();
+    textarea.select();
+    // iOS Safari requires an explicit selection range.
+    textarea.setSelectionRange(0, text.length);
+
+    let succeeded = false;
+    try {
+      succeeded = document.execCommand('copy');
+    } catch (e) {
+      console.log('copyWithFallback: execCommand copy failed', e);
+      succeeded = false;
+    }
+
+    document.body.removeChild(textarea);
+
+    // Restore any prior user selection.
+    if (previousRange && selection) {
+      selection.removeAllRanges();
+      selection.addRange(previousRange);
+    }
+
+    return succeeded;
+  };
+
   const handleShare = async () => {
     const text = buildShareText();
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (e) {
-      console.log('handleShare: clipboard write failed, falling back', e);
-      const textarea = document.createElement('textarea');
-      textarea.value = text;
-      textarea.style.position = 'fixed';
-      textarea.style.opacity = '0';
-      document.body.appendChild(textarea);
-      textarea.select();
+
+    // Prefer the async Clipboard API when available (secure contexts only).
+    if (navigator.clipboard && window.isSecureContext) {
       try {
-        document.execCommand('copy');
+        await navigator.clipboard.writeText(text);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
-      } catch (fallbackError) {
-        console.log('handleShare: fallback copy failed', fallbackError);
-      } finally {
-        document.body.removeChild(textarea);
+        return;
+      } catch (e) {
+        console.log('handleShare: clipboard API failed, falling back', e);
       }
+    }
+
+    // Fallback for insecure contexts (e.g. HTTP) or unsupported browsers.
+    const succeeded = copyWithFallback(text);
+    if (succeeded) {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } else {
+      console.log('handleShare: all copy strategies failed');
     }
   };
 
