@@ -7,12 +7,14 @@ import { DataService, getDailyStartingLocation } from './DataService';
 import Progress from './Progress/Progress';
 import { ZOOM_LEVELS } from './Map/ZoomLevel';
 import EndScreen from './EndScreen/EndScreen';
+import HowToPlay from './HowToPlay/HowToPlay';
 import { getScoreForGuess } from './ScoringService';
 
 function App() {
   const [guesses, setGuesses] = useState<LatLng[]>([]);
   const [currentGuessLocation, setCurrentGuessLocation] = useState<LatLng | undefined>();
   const [endScreenOpen, setEndScreenOpen] = useState(false);
+  const [howToPlayOpen, setHowToPlayOpen] = useState(false);
 
   const [startingLocale, setStartingLocale] = useState(getDailyStartingLocation());
 
@@ -89,6 +91,10 @@ function App() {
 
   return (
     <>
+      <button className="how-to-play-button" onClick={() => setHowToPlayOpen(true)}>
+        How to Play
+      </button>
+      <HowToPlay open={howToPlayOpen} onClose={() => setHowToPlayOpen(false)} />
       <section id="center">
         <MapView
           key={guesses.length}

@@ -97,6 +97,13 @@ p {
   margin: 0;
 }
 
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+}
+
 code,
 .counter {
   font-family: var(--mono);

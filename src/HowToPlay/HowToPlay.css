@@ -1,0 +1,63 @@
+.how-to-play .MuiDialog-paper {
+  width: 480px;
+  max-width: 90vw;
+  border-radius: 8px;
+  background: #16171d;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  position: relative;
+}
+
+.how-to-play .MuiDialogTitle-root {
+  text-align: center;
+}
+
+.how-to-play-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: #ffffff;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  z-index: 1;
+}
+
+.how-to-play-close:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.how-to-play-content {
+  padding: 0 24px 24px;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-align: left;
+}
+
+.how-to-play-button {
+  position: fixed;
+  top: 20px;
+  left: 8px;
+  width: calc(5vw - 16px);
+  box-sizing: border-box;
+  padding: 10px 4px;
+  background-color: #9d00ff;
+  color: #ded8c2;
+  border: 1px solid #6b6375;
+  border-radius: 5px;
+  font-weight: bolder;
+  font-size: 0.7rem;
+  cursor: pointer;
+  z-index: 1000;
+}
+
+.how-to-play-button:hover {
+  background-color: #8400d6;
+}
