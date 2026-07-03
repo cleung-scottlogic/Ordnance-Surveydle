@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import './App.css';
 import MapView from './Map/MapView';
 import type { MapContainerProps } from 'react-leaflet';
@@ -14,7 +14,22 @@ function App() {
   const [currentGuessLocation, setCurrentGuessLocation] = useState<LatLng | undefined>();
   const [endScreenOpen, setEndScreenOpen] = useState(false);
 
-  const [startingLocale] = useState(getDailyStartingLocation());
+  const [startingLocale, setStartingLocale] = useState(getDailyStartingLocation());
+
+  // Propagate seed changes made on the admin page: reset the game to the new location.
+  useEffect(() => {
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key !== 'mapgame:seedOffset') return;
+
+      setStartingLocale(getDailyStartingLocation());
+      setGuesses([]);
+      setCurrentGuessLocation(undefined);
+      setEndScreenOpen(false);
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
 
   const origin = {
     lat: startingLocale.lat,

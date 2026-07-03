@@ -1,13 +1,18 @@
 import { useState } from 'react';
 import './AdminPage.css';
-import { getDailyStartingLocation } from '../DataService';
+import { getDailyStartingLocation, incrementSeedOffset } from '../DataService';
 
 function AdminPage() {
-  const [startingLocation] = useState(getDailyStartingLocation());
+  const [startingLocation, setStartingLocation] = useState(getDailyStartingLocation());
 
   const dateString = startingLocation.date.toLocaleString('en-GB', {
     timeZone: 'Europe/London',
   });
+
+  const handleIncrementSeed = () => {
+    incrementSeedOffset();
+    setStartingLocation(getDailyStartingLocation());
+  };
 
   return (
     <section id="admin">
@@ -34,6 +39,10 @@ function AdminPage() {
           <span className="admin-value">{startingLocation.seed}</span>
         </div>
       </div>
+
+      <button className="admin-button" onClick={handleIncrementSeed}>
+        Increase Seed
+      </button>
     </section>
   );
 }
