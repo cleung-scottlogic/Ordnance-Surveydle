@@ -1,6 +1,6 @@
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import './EndScreen.css';
 import { type MapContainerProps } from 'react-leaflet';
 import type { LatLng } from 'leaflet';
@@ -21,6 +21,7 @@ function EndScreen({
   guesses?: LatLng[];
 }) {
   const [copied, setCopied] = useState(false);
+  const summaryRef = useRef<HTMLElement>(null);
 
   const osmMapContainerProps: MapContainerProps = {
     center: startingMarker,
@@ -97,7 +98,10 @@ function EndScreen({
     textarea.style.boxShadow = 'none';
     textarea.style.background = 'transparent';
     textarea.setAttribute('readonly', '');
-    document.body.appendChild(textarea);
+
+    // Append inside the dialog so MUI's focus trap doesn't steal focus back.
+    const container = summaryRef.current ?? document.body;
+    container.appendChild(textarea);
 
     const selection = document.getSelection();
     const previousRange = selection && selection.rangeCount > 0 ? selection.getRangeAt(0) : null;
@@ -115,7 +119,7 @@ function EndScreen({
       succeeded = false;
     }
 
-    document.body.removeChild(textarea);
+    container.removeChild(textarea);
 
     // Restore any prior user selection.
     if (previousRange && selection) {
@@ -194,7 +198,7 @@ function EndScreen({
             />
           </div>
 
-          <aside className="end-screen-summary">
+          <aside className="end-screen-summary" ref={summaryRef}>
             <h3>Game Summary</h3>
             {guessListElement}
             <button className="share-button" onClick={handleShare}>
