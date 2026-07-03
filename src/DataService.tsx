@@ -17,6 +17,7 @@ interface StartingLocation {
   northing: string;
   lat: number;
   lng: number;
+  seed?: number;
 }
 
 export const DataService: DataService = {
@@ -113,5 +114,6 @@ export const getDailyStartingLocation = (): StartingLocation => {
     northing,
     lat: wgs84._lat,
     lng: wgs84._lon,
+    seed,
   };
 };

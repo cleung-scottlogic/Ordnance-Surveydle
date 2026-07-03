@@ -152,7 +152,7 @@ function EndScreen({
           </div>
 
           <aside className="end-screen-summary">
-            <h3>Guesses Summary</h3>
+            <h3>Game Summary</h3>
             {guessListElement}
             <button className="share-button" onClick={handleShare}>
               {copied ? 'Copied!' : 'Share Results'}

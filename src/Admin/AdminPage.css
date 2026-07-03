@@ -1,0 +1,45 @@
+#admin {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+  place-content: center;
+  place-items: center;
+  flex-grow: 1;
+  padding: 40px 0;
+}
+
+#admin .header {
+  display: flex;
+  flex-direction: column;
+  place-items: center;
+}
+
+.admin-details {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: 480px;
+}
+
+.admin-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  padding: 10px 16px;
+  border: 1px solid #6b6375;
+  border-radius: 5px;
+  background-color: #ded8c2;
+}
+
+.admin-label {
+  color: #9d00ff;
+  font-weight: bolder;
+}
+
+.admin-value {
+  color: #1b998b;
+  font-weight: bold;
+  font-family: var(--mono);
+}
