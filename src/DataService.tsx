@@ -74,7 +74,41 @@ const seededRandom = (seed: number): number => {
   return x - Math.floor(x);
 };
 
-export const getDailyStartingLocation = (): StartingLocation => {
+const SEED_OFFSET_KEY = 'mapgame:seedOffset';
+
+export const getSeedOffset = (): number => {
+  try {
+    const stored = localStorage.getItem(SEED_OFFSET_KEY);
+    const parsed = stored === null ? 0 : parseInt(stored, 10);
+    return Number.isFinite(parsed) ? parsed : 0;
+  } catch (e) {
+    console.log('getSeedOffset: failed to read seed offset', e);
+    return 0;
+  }
+};
+
+export const setSeedOffset = (offset: number): void => {
+  try {
+    localStorage.setItem(SEED_OFFSET_KEY, String(offset));
+  } catch (e) {
+    console.log('setSeedOffset: failed to persist seed offset', e);
+  }
+};
+
+export const incrementSeedOffset = (): number => {
+  const next = getSeedOffset() + 1;
+  setSeedOffset(next);
+  return next;
+};
+
+// Compute the deterministic base seed for the current UK day.
+export const getDailyBaseSeed = (ukDate: Date): number => {
+  const dateString = `${ukDate.getFullYear()}-${ukDate.getMonth() + 1}-${ukDate.getDate()}`;
+  return dateString.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+};
+
+// Generate a starting location deterministically from a seed value.
+export const getStartingLocationFromSeed = (seed: number, date: Date): StartingLocation => {
   // prettier-ignore
   const osGridSquares = [
     "HU","NC","NG","NH",
@@ -84,14 +118,6 @@ export const getDailyStartingLocation = (): StartingLocation => {
     "TM","TQ","SU","ST","SS","SX"
   ];
 
-  // Convert UTC to UK time (GMT/BST) and use that date as seed
-  const utcNow = new Date();
-  const ukDate = new Date(utcNow.toLocaleString('en-GB', { timeZone: 'Europe/London' }));
-
-  const dateString = `${ukDate.getFullYear()}-${ukDate.getMonth() + 1}-${ukDate.getDate()}`;
-  const seed = dateString.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-
-  // Generate deterministic random values from the seed
   const gridIndex = Math.floor(seededRandom(seed) * osGridSquares.length);
   const eastingSeed = seed + 1;
   const northingSeed = seed + 2;
@@ -108,7 +134,7 @@ export const getDailyStartingLocation = (): StartingLocation => {
   const wgs84 = gridRef.toLatLon();
 
   return {
-    date: ukDate,
+    date,
     gridReference,
     easting,
     northing,
@@ -116,4 +142,15 @@ export const getDailyStartingLocation = (): StartingLocation => {
     lng: wgs84._lon,
     seed,
   };
+};
+
+export const getDailyStartingLocation = (): StartingLocation => {
+  // Convert UTC to UK time (GMT/BST) and use that date as seed
+  const utcNow = new Date();
+  const ukDate = new Date(utcNow.toLocaleString('en-GB', { timeZone: 'Europe/London' }));
+
+  // Base seed from the UK date, plus any admin-applied offset
+  const seed = getDailyBaseSeed(ukDate) + getSeedOffset();
+
+  return getStartingLocationFromSeed(seed, ukDate);
 };

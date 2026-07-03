@@ -60,7 +60,7 @@ function EndScreen({
     return '🟥';
   };
 
-  const gameUrl = 'https://ordnance-surveydle.s3.eu-west-2.amazonaws.com/index.html';
+  const gameUrl = 'http://ordnance-surveydle.s3-website.eu-west-2.amazonaws.com/';
 
   const buildShareText = (): string => {
     const bestScore = getBestScore();
