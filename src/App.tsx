@@ -4,6 +4,7 @@ import MapView from './Map/MapView';
 import type { MapContainerProps } from 'react-leaflet';
 import L, { LatLng } from 'leaflet';
 import { DataService, getDailyStartingLocation } from './DataService';
+import type { StartingLocation } from './DataService';
 import Progress from './Progress/Progress';
 import { ZOOM_LEVELS } from './Map/ZoomLevel';
 import EndScreen from './EndScreen/EndScreen';
@@ -16,22 +17,32 @@ function App() {
   const [endScreenOpen, setEndScreenOpen] = useState(false);
   const [howToPlayOpen, setHowToPlayOpen] = useState(false);
 
-  const [startingLocale, setStartingLocale] = useState(getDailyStartingLocation());
+  const [startingLocale, setStartingLocale] = useState<StartingLocation | undefined>();
+
+  useEffect(() => {
+    void getDailyStartingLocation().then(setStartingLocale);
+  }, []);
 
   // Propagate seed changes made on the admin page: reset the game to the new location.
   useEffect(() => {
     const handleStorageChange = (event: StorageEvent) => {
       if (event.key !== 'mapgame:seedOffset') return;
 
-      setStartingLocale(getDailyStartingLocation());
-      setGuesses([]);
-      setCurrentGuessLocation(undefined);
-      setEndScreenOpen(false);
+      void getDailyStartingLocation().then((location) => {
+        setStartingLocale(location);
+        setGuesses([]);
+        setCurrentGuessLocation(undefined);
+        setEndScreenOpen(false);
+      });
     };
 
     window.addEventListener('storage', handleStorageChange);
     return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
+
+  if (!startingLocale) {
+    return null;
+  }
 
   const origin = {
     lat: startingLocale.lat,
