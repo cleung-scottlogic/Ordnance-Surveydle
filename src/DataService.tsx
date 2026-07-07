@@ -10,8 +10,7 @@ interface DataService {
   historicalAttribution: string;
 }
 
-interface StartingLocation {
-  date: Date;
+export interface StartingLocation {
   gridReference: string;
   easting: string;
   northing: string;
@@ -29,46 +28,6 @@ export const DataService: DataService = {
   historicalAttribution: `<a href="${import.meta.env.VITE_HISTORICAL_ATTRIBUTION}">National Library of Scotland</a>`,
 };
 
-// alternative generation: list of towns and villages converted to grid refernec with random amount added
-export const getStartinglocation = (): StartingLocation => {
-  // prettier-ignore
-  const osGridSquares = [
-    "HU","NC","NG","NH",
-    "NJ","NO","NN","NM","NR","NS","NT","NZ",
-    "NY","NX","NY","NZ","SE","SD","SH",
-    "SJ","SK","TF","SN","SO","SP","TL",
-    "TM","TQ","SU","ST","SS","SX"
-
-  ]
-
-  // grid references that contain too much sea
-  // ,"HY",,"ND","NB",,"NF","TA","TG","TR","SW",    "NU"
-
-  const getRandomThreeDigitNumber = (): string => {
-    const value = Math.floor(Math.random() * 999);
-
-    return value.toString().padStart(3, '0');
-  };
-
-  const gridReference: string = osGridSquares[Math.floor(Math.random() * osGridSquares.length)];
-  const easting = getRandomThreeDigitNumber();
-  const northing = getRandomThreeDigitNumber();
-
-  const gridRef = OsGridRef.parse(gridReference + easting + northing);
-  const wgs84 = gridRef.toLatLon();
-  const lat: number = wgs84._lat;
-  const lng: number = wgs84._lon;
-
-  return {
-    date: new Date(),
-    gridReference,
-    easting,
-    northing,
-    lat,
-    lng,
-  };
-};
-
 const seededRandom = (seed: number): number => {
   const x = Math.sin(seed) * 10000;
   return x - Math.floor(x);
@@ -76,7 +35,7 @@ const seededRandom = (seed: number): number => {
 
 const SEED_OFFSET_KEY = 'mapgame:seedOffset';
 
-export const getSeedOffset = (): number => {
+const getSeedOffset = (): number => {
   try {
     const stored = localStorage.getItem(SEED_OFFSET_KEY);
     const parsed = stored === null ? 0 : parseInt(stored, 10);
@@ -87,7 +46,7 @@ export const getSeedOffset = (): number => {
   }
 };
 
-export const setSeedOffset = (offset: number): void => {
+const setSeedOffset = (offset: number): void => {
   try {
     localStorage.setItem(SEED_OFFSET_KEY, String(offset));
   } catch (e) {
@@ -101,14 +60,25 @@ export const incrementSeedOffset = (): number => {
   return next;
 };
 
-// Compute the deterministic base seed for the current UK day.
-export const getDailyBaseSeed = (ukDate: Date): number => {
-  const dateString = `${ukDate.getFullYear()}-${ukDate.getMonth() + 1}-${ukDate.getDate()}`;
-  return dateString.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+// Public S3 object holding the current day's seed, e.g. { "seed": 123456 }.
+const DAILY_SEED_URL =
+  'https://ckl-mapgame-daily-seeds-696537702940-eu-west-2-an.s3.eu-west-2.amazonaws.com/seed';
+
+const fetchDailySeed = async (): Promise<number> => {
+  const response = await fetch(DAILY_SEED_URL, { cache: 'no-store' });
+  if (!response.ok) {
+    throw new Error(`seed request failed: ${response.status}`);
+  }
+  const data = await response.json();
+  const seed = Number(data?.seed);
+  if (!Number.isFinite(seed)) {
+    throw new Error('seed missing or not a number');
+  }
+  return seed >>> 0;
 };
 
 // Generate a starting location deterministically from a seed value.
-export const getStartingLocationFromSeed = (seed: number, date: Date): StartingLocation => {
+const getStartingLocationFromSeed = (seed: number): StartingLocation => {
   // prettier-ignore
   const osGridSquares = [
     "HU","NC","NG","NH",
@@ -134,7 +104,6 @@ export const getStartingLocationFromSeed = (seed: number, date: Date): StartingL
   const wgs84 = gridRef.toLatLon();
 
   return {
-    date,
     gridReference,
     easting,
     northing,
@@ -144,13 +113,8 @@ export const getStartingLocationFromSeed = (seed: number, date: Date): StartingL
   };
 };
 
-export const getDailyStartingLocation = (): StartingLocation => {
-  // Convert UTC to UK time (GMT/BST) and use that date as seed
-  const utcNow = new Date();
-  const ukDate = new Date(utcNow.toLocaleString('en-GB', { timeZone: 'Europe/London' }));
+export const getDailyStartingLocation = async (): Promise<StartingLocation> => {
+  const seed = await fetchDailySeed();
 
-  // Base seed from the UK date, plus any admin-applied offset
-  const seed = getDailyBaseSeed(ukDate) + getSeedOffset();
-
-  return getStartingLocationFromSeed(seed, ukDate);
+  return getStartingLocationFromSeed(seed);
 };
