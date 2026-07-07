@@ -70,7 +70,7 @@ const fetchDailySeed = async (): Promise<number> => {
     throw new Error(`seed request failed: ${response.status}`);
   }
   const data = await response.json();
-  const seed = Number(data?.seed);
+  const seed = Number(data);
   if (!Number.isFinite(seed)) {
     throw new Error('seed missing or not a number');
   }
@@ -87,6 +87,9 @@ const getStartingLocationFromSeed = (seed: number): StartingLocation => {
     "SJ","SK","TF","SN","SO","SP","TL",
     "TM","TQ","SU","ST","SS","SX"
   ];
+
+  // grid references that contain too much sea
+  // ,"HY",,"ND","NB",,"NF","TA","TG","TR","SW",    "NU"
 
   const gridIndex = Math.floor(seededRandom(seed) * osGridSquares.length);
   const eastingSeed = seed + 1;
