@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import './AdminPage.css';
-import { getDailyStartingLocation, incrementSeedOffset } from '../DataService';
+import { getDailyStartingLocation, triggerSeedReroll } from '../DataService';
 import type { StartingLocation } from '../DataService';
 
 function AdminPage() {
@@ -11,8 +11,9 @@ function AdminPage() {
   }, []);
 
   const handleIncrementSeed = () => {
-    incrementSeedOffset();
-    void getDailyStartingLocation().then(setStartingLocation);
+    void triggerSeedReroll()
+      .then(() => getDailyStartingLocation())
+      .then(setStartingLocation);
   };
 
   if (!startingLocation) {

@@ -54,13 +54,31 @@ const setSeedOffset = (offset: number): void => {
   }
 };
 
-export const incrementSeedOffset = (): number => {
+const incrementSeedOffset = (): number => {
   const next = getSeedOffset() + 1;
   setSeedOffset(next);
   return next;
 };
 
-// Public S3 object holding the current day's seed, e.g. { "seed": 123456 }.
+// Lambda Function URL that regenerates the daily seed for a given reroll count.
+const REROLL_LAMBDA_URL = import.meta.env.VITE_REROLL_LAMBDA_URL;
+
+// Bump the persisted reroll counter and ask the Lambda to regenerate the seed.
+// The new seed is written to S3 by the Lambda, so callers should re-fetch the
+// starting location afterwards.
+export const triggerSeedReroll = async (): Promise<void> => {
+  const reroll = incrementSeedOffset();
+  const response = await fetch(REROLL_LAMBDA_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ reroll }),
+  });
+  if (!response.ok) {
+    throw new Error(`seed reroll failed: ${response.status}`);
+  }
+};
+
+// Public S3 object holding the current day's seed as a raw JSON number, e.g. 2124808443.
 const DAILY_SEED_URL =
   'https://ckl-mapgame-daily-seeds-696537702940-eu-west-2-an.s3.eu-west-2.amazonaws.com/seed';
 
