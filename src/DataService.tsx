@@ -35,7 +35,7 @@ const seededRandom = (seed: number): number => {
 
 const SEED_OFFSET_KEY = 'mapgame:seedOffset';
 
-const getSeedOffset = (): number => {
+export const getSeedOffset = (): number => {
   try {
     const stored = localStorage.getItem(SEED_OFFSET_KEY);
     const parsed = stored === null ? 0 : parseInt(stored, 10);
@@ -54,20 +54,14 @@ const setSeedOffset = (offset: number): void => {
   }
 };
 
-const incrementSeedOffset = (): number => {
-  const next = getSeedOffset() + 1;
-  setSeedOffset(next);
-  return next;
-};
-
 // Lambda Function URL that regenerates the daily seed for a given reroll count.
 const REROLL_LAMBDA_URL = import.meta.env.VITE_REROLL_LAMBDA_URL;
 
-// Bump the persisted reroll counter and ask the Lambda to regenerate the seed.
+// Persist the chosen reroll offset and ask the Lambda to regenerate the seed.
 // The new seed is written to S3 by the Lambda, so callers should re-fetch the
 // starting location afterwards.
-export const triggerSeedReroll = async (): Promise<void> => {
-  const reroll = incrementSeedOffset();
+export const triggerSeedReroll = async (reroll: number): Promise<void> => {
+  setSeedOffset(reroll);
   const response = await fetch(REROLL_LAMBDA_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

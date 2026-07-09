@@ -1,17 +1,23 @@
 import { useEffect, useState } from 'react';
 import './AdminPage.css';
-import { getDailyStartingLocation, triggerSeedReroll } from '../DataService';
+import { getDailyStartingLocation, getSeedOffset, triggerSeedReroll } from '../DataService';
 import type { StartingLocation } from '../DataService';
 
 function AdminPage() {
   const [startingLocation, setStartingLocation] = useState<StartingLocation | undefined>();
+  const [offsetInput, setOffsetInput] = useState<string>(String(getSeedOffset()));
 
   useEffect(() => {
     void getDailyStartingLocation().then(setStartingLocation);
   }, []);
 
-  const handleIncrementSeed = () => {
-    void triggerSeedReroll()
+  const handleApplyOffset = () => {
+    const offset = parseInt(offsetInput, 10);
+    if (!Number.isFinite(offset)) {
+      return;
+    }
+
+    void triggerSeedReroll(offset)
       .then(() => getDailyStartingLocation())
       .then(setStartingLocation);
   };
@@ -50,9 +56,21 @@ function AdminPage() {
         </div>
       </div>
 
-      <button className="admin-button" onClick={handleIncrementSeed}>
-        Increase Seed
-      </button>
+      <div className="admin-offset">
+        <label className="admin-label" htmlFor="offset-input">
+          Offset
+        </label>
+        <input
+          id="offset-input"
+          className="admin-input"
+          type="number"
+          value={offsetInput}
+          onChange={(e) => setOffsetInput(e.target.value)}
+        />
+        <button className="admin-button" onClick={handleApplyOffset}>
+          Apply Offset
+        </button>
+      </div>
     </section>
   );
 }

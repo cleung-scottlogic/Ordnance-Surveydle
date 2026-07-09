@@ -57,3 +57,20 @@
 .admin-button:hover {
   background-color: #8400d6;
 }
+
+.admin-offset {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.admin-input {
+  padding: 10px 16px;
+  border: 1px solid #6b6375;
+  border-radius: 5px;
+  background-color: #ded8c2;
+  color: #1b998b;
+  font-weight: bold;
+  font-family: var(--mono);
+  width: 120px;
+}
