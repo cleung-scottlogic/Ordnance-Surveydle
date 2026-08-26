@@ -4,8 +4,12 @@ import { useRef, useState } from 'react';
 import './EndScreen.css';
 import { type MapContainerProps } from 'react-leaflet';
 import type { LatLng } from 'leaflet';
-import { DataService } from '../DataService';
-import { getDistanceKm, getDistanceMeters, getScoreForGuess } from '../ScoringService';
+import { DataService, type DailyLocation } from '../DataService';
+import {
+  getDistanceKm,
+  getDistanceMeters,
+  getScoreForGuess,
+} from '../ScoringService';
 
 import MapView from '../Map/MapView';
 
@@ -14,11 +18,13 @@ function EndScreen({
   onClose,
   startingMarker,
   guesses,
+  location,
 }: {
   open: boolean;
   onClose?: () => void;
   startingMarker?: LatLng;
   guesses?: LatLng[];
+  location?: DailyLocation;
 }) {
   const [copied, setCopied] = useState(false);
   const summaryRef = useRef<HTMLElement>(null);
@@ -36,7 +42,8 @@ function EndScreen({
     let minDistance = getDistanceMeters(guesses[0], startingMarker) ?? Infinity;
 
     for (let i = 1; i < guesses.length; i++) {
-      const distance = getDistanceMeters(guesses[i], startingMarker) ?? Infinity;
+      const distance =
+        getDistanceMeters(guesses[i], startingMarker) ?? Infinity;
       if (distance < minDistance) {
         minDistance = distance;
         closest = guesses[i];
@@ -50,7 +57,10 @@ function EndScreen({
 
   const getBestScore = (): number => {
     if (!guesses || guesses.length === 0) return 0;
-    return guesses.reduce((best, g) => Math.max(best, getScoreForGuess(g, startingMarker) ?? 0), 0);
+    return guesses.reduce(
+      (best, g) => Math.max(best, getScoreForGuess(g, startingMarker) ?? 0),
+      0,
+    );
   };
 
   const getScoreEmoji = (score: number): string => {
@@ -61,7 +71,8 @@ function EndScreen({
     return '🟥';
   };
 
-  const gameUrl = 'http://ordnance-surveydle.s3-website.eu-west-2.amazonaws.com/';
+  const gameUrl =
+    'http://ordnance-surveydle.s3-website.eu-west-2.amazonaws.com/';
 
   const buildShareText = (): string => {
     const bestScore = getBestScore();
@@ -104,7 +115,8 @@ function EndScreen({
     container.appendChild(textarea);
 
     const selection = document.getSelection();
-    const previousRange = selection && selection.rangeCount > 0 ? selection.getRangeAt(0) : null;
+    const previousRange =
+      selection && selection.rangeCount > 0 ? selection.getRangeAt(0) : null;
 
     textarea.focus();
     textarea.select();
@@ -172,20 +184,24 @@ function EndScreen({
       );
     });
 
-    return <div className="guess-list">{items}</div>;
+    return <div className='guess-list'>{items}</div>;
   };
 
   const guessListElement = renderGuessList();
 
   return (
     <>
-      <Dialog className="end-screen" open={open} onClose={onClose}>
-        <button className="end-screen-close" aria-label="close" onClick={onClose}>
+      <Dialog className='end-screen' open={open} onClose={onClose}>
+        <button
+          className='end-screen-close'
+          aria-label='close'
+          onClick={onClose}
+        >
           &times;
         </button>
-        <DialogTitle className="title">Game Over</DialogTitle>
-        <div className="end-screen-content">
-          <div className="end-screen-map">
+        <DialogTitle className='title'>Game Over</DialogTitle>
+        <div className='end-screen-content'>
+          <div className='end-screen-map'>
             <MapView
               mapContainerProps={osmMapContainerProps}
               tileLayer={DataService.osmTileLayer}
@@ -198,10 +214,50 @@ function EndScreen({
             />
           </div>
 
-          <aside className="end-screen-summary" ref={summaryRef}>
+          <aside className='end-screen-summary' ref={summaryRef}>
+            {location && (
+              <div className='location-details'>
+                <h3>{location.primaryPlaceName}</h3>
+                <p className='location-field'>
+                  <span className='location-label'>Type:</span> {location.type}
+                </p>
+                <p className='location-field'>
+                  <span className='location-label'>County:</span>{' '}
+                  {location.historicCounty}
+                </p>
+                {location.civilParish && (
+                  <p className='location-field'>
+                    <span className='location-label'>Civil Parish:</span>{' '}
+                    {location.civilParish}
+                  </p>
+                )}
+                {location.unitaryAuthorityArea && (
+                  <p className='location-field'>
+                    <span className='location-label'>
+                      Unitary Authority Area:
+                    </span>{' '}
+                    {location.unitaryAuthorityArea}
+                  </p>
+                )}
+                <p className='location-field'>
+                  <span className='location-label'>Country:</span>{' '}
+                  {location.country}
+                </p>
+                <p className='location-field'>
+                  <span className='location-label'>Lat/Lng:</span>{' '}
+                  {location.lat.toFixed(5)}, {location.lng.toFixed(5)}
+                </p>
+                {location.description && (
+                  <p className='location-field'>
+                    <span className='location-label'>Description:</span>{' '}
+                    {location.description}
+                  </p>
+                )}
+              </div>
+            )}
             <h3>Game Summary</h3>
             {guessListElement}
-            <button className="share-button" onClick={handleShare}>
+            <button className='share-button' onClick={handleShare}>
               {copied ? 'Copied!' : 'Share Results'}
             </button>
           </aside>
