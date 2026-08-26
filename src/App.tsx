@@ -3,8 +3,8 @@ import './App.css';
 import MapView from './Map/MapView';
 import type { MapContainerProps } from 'react-leaflet';
 import L, { LatLng } from 'leaflet';
-import { DataService, getDailyStartingLocation } from './DataService';
-import type { StartingLocation } from './DataService';
+import { DataService, fetchDailyLocation } from './DataService';
+import type { DailyLocation } from './DataService';
 import Progress from './Progress/Progress';
 import { ZOOM_LEVELS } from './Map/ZoomLevel';
 import EndScreen from './EndScreen/EndScreen';
@@ -17,10 +17,10 @@ function App() {
   const [endScreenOpen, setEndScreenOpen] = useState(false);
   const [howToPlayOpen, setHowToPlayOpen] = useState(false);
 
-  const [startingLocale, setStartingLocale] = useState<StartingLocation | undefined>();
+  const [startingLocale, setStartingLocale] = useState<DailyLocation | undefined>();
 
   useEffect(() => {
-    void getDailyStartingLocation().then(setStartingLocale);
+    void fetchDailyLocation().then(setStartingLocale);
   }, []);
 
   // Propagate seed changes made on the admin page: reset the game to the new location.
@@ -28,7 +28,7 @@ function App() {
     const handleStorageChange = (event: StorageEvent) => {
       if (event.key !== 'mapgame:seedOffset') return;
 
-      void getDailyStartingLocation().then((location) => {
+      void fetchDailyLocation().then((location) => {
         setStartingLocale(location);
         setGuesses([]);
         setCurrentGuessLocation(undefined);

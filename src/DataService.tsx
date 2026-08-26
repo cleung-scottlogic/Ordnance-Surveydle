@@ -19,6 +19,27 @@ export interface StartingLocation {
   seed?: number;
 }
 
+export interface DailyLocation {
+  id: string;
+  gbpnUrl: string;
+  primaryPlaceName: string;
+  gridReference: string;
+  lat: number;
+  lng: number;
+  type: string;
+  historicCounty: string;
+  division: string | null;
+  island: string | null;
+  townland: string | null;
+  civilParish: string | null;
+  administrativeCounty: string | null;
+  district: string | null;
+  unitaryAuthorityArea: string | null;
+  policeArea: string | null;
+  country: string;
+  description: string | null;
+}
+
 export const DataService: DataService = {
   osmTileLayer: import.meta.env.VITE_OSM_TILELAYER,
   osmAttribution: `&copy; <a href="${import.meta.env.VITE_OSM_ATTRIBUTION}">OpenStreetMap</a> contributors`,
@@ -72,9 +93,15 @@ export const triggerSeedReroll = async (reroll: number): Promise<void> => {
   }
 };
 
+// Public S3 bucket holding the current day's seed and location objects.
+const DAILY_BUCKET_URL =
+  'https://ckl-mapgame-daily-seeds-696537702940-eu-west-2-an.s3.eu-west-2.amazonaws.com';
+
 // Public S3 object holding the current day's seed as a raw JSON number, e.g. 2124808443.
-const DAILY_SEED_URL =
-  'https://ckl-mapgame-daily-seeds-696537702940-eu-west-2-an.s3.eu-west-2.amazonaws.com/seed';
+const DAILY_SEED_URL = `${DAILY_BUCKET_URL}/seed`;
+
+// Public S3 object holding the current day's location as a JSON gazetteer record.
+const DAILY_LOCATION_URL = `${DAILY_BUCKET_URL}/location`;
 
 const fetchDailySeed = async (): Promise<number> => {
   const response = await fetch(DAILY_SEED_URL, { cache: 'no-store' });
@@ -87,6 +114,60 @@ const fetchDailySeed = async (): Promise<number> => {
     throw new Error('seed missing or not a number');
   }
   return seed >>> 0;
+};
+
+// Raw gazetteer record shape as stored in S3, before mapping to DailyLocation.
+interface RawDailyLocation {
+  ID: string;
+  'GBPN URL': string;
+  'Primary Place Name': string;
+  'Grid Reference': string;
+  Latitude: string;
+  Longitude: string;
+  Type: string;
+  'Historic County': string;
+  Division: string | null;
+  Island: string | null;
+  Townland: string | null;
+  'Civil Parish': string | null;
+  'Administrative County': string | null;
+  District: string | null;
+  'Unitary Authority Area': string | null;
+  'Police Area': string | null;
+  Country: string;
+  Description: string | null;
+}
+
+// https://gazetteer.org.uk/contents
+export const fetchDailyLocation = async (): Promise<DailyLocation> => {
+  const response = await fetch(DAILY_LOCATION_URL, { cache: 'no-store' });
+  if (!response.ok) {
+    throw new Error(`location request failed: ${response.status}`);
+  }
+  const data = (await response.json()) as RawDailyLocation;
+  if (!data || typeof data.ID !== 'string') {
+    throw new Error('location missing or malformed');
+  }
+  return {
+    id: data.ID,
+    gbpnUrl: data['GBPN URL'],
+    primaryPlaceName: data['Primary Place Name'],
+    gridReference: data['Grid Reference'],
+    lat: Number(data.Latitude),
+    lng: Number(data.Longitude),
+    type: data.Type,
+    historicCounty: data['Historic County'],
+    division: data.Division,
+    island: data.Island,
+    townland: data.Townland,
+    civilParish: data['Civil Parish'],
+    administrativeCounty: data['Administrative County'],
+    district: data.District,
+    unitaryAuthorityArea: data['Unitary Authority Area'],
+    policeArea: data['Police Area'],
+    country: data.Country,
+    description: data.Description,
+  };
 };
 
 // Generate a starting location deterministically from a seed value.
