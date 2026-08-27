@@ -71,8 +71,7 @@ function EndScreen({
     return '🟥';
   };
 
-  const gameUrl =
-    'http://ordnance-surveydle.s3-website.eu-west-2.amazonaws.com/';
+  const gameUrl = 'https://osdle.kaiming.uk/';
 
   const buildShareText = (): string => {
     const bestScore = getBestScore();
