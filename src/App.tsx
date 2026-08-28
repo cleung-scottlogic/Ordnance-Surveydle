@@ -63,11 +63,17 @@ function App() {
 
   const boundFactor = ZOOM_LEVELS[guesses.length].boundsFactor * 4;
 
+  const historicalMaxZoom = hasPerfectGuess ? 1 : ZOOM_LEVELS[0].zoom;
+  const historicalZoom = Math.min(
+    ZOOM_LEVELS[guesses.length].zoom,
+    historicalMaxZoom,
+  );
+
   const historicalMapContainerProps: MapContainerProps = {
     center: origin,
-    minZoom: ZOOM_LEVELS[guesses.length].zoom,
-    maxZoom: ZOOM_LEVELS[0].zoom,
-    zoom: ZOOM_LEVELS[guesses.length].zoom,
+    minZoom: historicalZoom,
+    maxZoom: historicalMaxZoom,
+    zoom: historicalZoom,
     dragging: true,
     doubleClickZoom: false,
     zoomControl: true,
