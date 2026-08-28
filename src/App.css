@@ -1,11 +1,22 @@
 #center {
   display: flex;
   flex-direction: column;
-  gap: 25px;
+  gap: 16px;
   place-content: center;
   place-items: center;
   flex-grow: 1;
-  height: 1100px;
+  height: 100svh;
+  min-height: 0;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 0;
+}
+
+/* let the maps share the remaining vertical space instead of overflowing the viewport */
+#center .leaflet-container {
+  width: 100%;
+  flex: 1 1 0;
+  min-height: 0;
 }
 
 .header {
@@ -16,6 +27,7 @@
 }
 
 #progress {
+  flex-shrink: 0;
   display: flex;
   width: 100%;
   justify-content: center;
