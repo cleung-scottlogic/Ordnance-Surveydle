@@ -42,22 +42,20 @@
 }
 
 .how-to-play-button {
-  position: fixed;
-  top: 20px;
-  left: 8px;
-  width: calc(5vw - 16px);
+  width: 100%;
   box-sizing: border-box;
   padding: 10px 4px;
-  background-color: #9d00ff;
-  color: #ded8c2;
+  text-align: center;
+  background-color: var(--primary);
+  color: var(--secondary);
   border: 1px solid #6b6375;
   border-radius: 5px;
   font-weight: bolder;
-  font-size: 0.7rem;
+  font-size: 0.9rem;
   cursor: pointer;
   z-index: 1000;
 }
 
 .how-to-play-button:hover {
-  background-color: #8400d6;
+  background-color: var(--primary-hover);
 }
