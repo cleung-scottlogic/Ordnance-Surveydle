@@ -16,6 +16,10 @@ function HowToPlay({ open, onClose }: { open: boolean; onClose?: () => void }) {
           location.
         </p>
         <p>
+          Locations are taken from the more than 300,000 entries in the&nbsp;
+          <a href="https://gazetteer.org.uk/contents">Gazetteer of British Place Names</a>.
+        </p>
+        <p>
           Find the location on the historical map and click on the bottom map to make your guess.
         </p>
         <p>

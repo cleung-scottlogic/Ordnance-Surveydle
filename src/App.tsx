@@ -13,11 +13,15 @@ import { getScoreForGuess } from './ScoringService';
 
 function App() {
   const [guesses, setGuesses] = useState<LatLng[]>([]);
-  const [currentGuessLocation, setCurrentGuessLocation] = useState<LatLng | undefined>();
+  const [currentGuessLocation, setCurrentGuessLocation] = useState<
+    LatLng | undefined
+  >();
   const [endScreenOpen, setEndScreenOpen] = useState(false);
   const [howToPlayOpen, setHowToPlayOpen] = useState(false);
 
-  const [startingLocale, setStartingLocale] = useState<DailyLocation | undefined>();
+  const [startingLocale, setStartingLocale] = useState<
+    DailyLocation | undefined
+  >();
 
   useEffect(() => {
     void fetchDailyLocation().then(setStartingLocale);
@@ -51,12 +55,16 @@ function App() {
 
   const answerLocation = new LatLng(origin.lat, origin.lng);
 
-  const hasPerfectGuess = guesses.some((guess) => getScoreForGuess(guess, answerLocation) === 1000);
+  const hasPerfectGuess = guesses.some(
+    (guess) => getScoreForGuess(guess, answerLocation) === 1000,
+  );
 
   const isGameOver = guesses.length >= 5 || hasPerfectGuess;
 
   // On a win, show the map as if 5 guesses had been made instead of locking to zoom level 1.
-  const zoomLevelIndex = hasPerfectGuess ? ZOOM_LEVELS.length - 1 : guesses.length;
+  const zoomLevelIndex = hasPerfectGuess
+    ? ZOOM_LEVELS.length - 1
+    : guesses.length;
 
   const boundFactor = ZOOM_LEVELS[zoomLevelIndex].boundsFactor * 4;
 
@@ -100,7 +108,8 @@ function App() {
     const updatedGuesses = guesses.concat(currentGuessLocation);
     setGuesses(updatedGuesses);
 
-    const isPerfect = getScoreForGuess(currentGuessLocation, answerLocation) === 1000;
+    const isPerfect =
+      getScoreForGuess(currentGuessLocation, answerLocation) === 1000;
     if (updatedGuesses.length >= 5 || isPerfect) {
       setEndScreenOpen(true);
     }
@@ -108,22 +117,38 @@ function App() {
 
   return (
     <>
-      <button className="how-to-play-button" onClick={() => setHowToPlayOpen(true)}>
-        How to Play
-      </button>
       <HowToPlay open={howToPlayOpen} onClose={() => setHowToPlayOpen(false)} />
-      <section id="center">
-        <MapView
-          key={guesses.length}
-          mapContainerProps={historicalMapContainerProps}
-          tileLayer={`${DataService.historicalTileLayer}${DataService.historicalTileLayerKey}`}
-          attribution={DataService.historicalAttribution}
-          isCustomMarkerEnabled={false}
-          fixedMarker={new L.LatLng(origin.lat, origin.lng)}
-        ></MapView>
-        <section id="progress">
-          <Progress answerLocation={answerLocation} guesses={guesses} />
+      <section id='center'>
+        <section id='progress'>
           <button
+            className='how-to-play-button'
+            onClick={() => setHowToPlayOpen(true)}
+          >
+            How to Play
+          </button>
+          <Progress answerLocation={answerLocation} guesses={guesses} />
+        </section>
+        <section id='maps'>
+          <MapView
+            key={guesses.length}
+            mapContainerProps={historicalMapContainerProps}
+            tileLayer={`${DataService.historicalTileLayer}${DataService.historicalTileLayerKey}`}
+            attribution={DataService.historicalAttribution}
+            isCustomMarkerEnabled={false}
+            fixedMarker={new L.LatLng(origin.lat, origin.lng)}
+          ></MapView>
+          <MapView
+            mapContainerProps={osmMapContainerProps}
+            tileLayer={DataService.osmTileLayer}
+            attribution={DataService.osmAttribution}
+            isCustomMarkerEnabled={true}
+            existingMarkers={guesses}
+            setCurrentMarkerLocation={(location) =>
+              setCurrentGuessLocation(location)
+            }
+          ></MapView>
+          <button
+            className='submit-button'
             title={isGameOver ? 'Results' : 'Submit'}
             disabled={isGameOver ? false : isSubmitDisabled()}
             onClick={() => {
@@ -137,14 +162,6 @@ function App() {
             {isGameOver ? 'Results' : 'Submit'}
           </button>
         </section>
-        <MapView
-          mapContainerProps={osmMapContainerProps}
-          tileLayer={DataService.osmTileLayer}
-          attribution={DataService.osmAttribution}
-          isCustomMarkerEnabled={true}
-          existingMarkers={guesses}
-          setCurrentMarkerLocation={(location) => setCurrentGuessLocation(location)}
-        ></MapView>
         <EndScreen
           open={endScreenOpen}
           onClose={() => setEndScreenOpen(false)}

@@ -34,20 +34,20 @@
 }
 
 .admin-label {
-  color: #9d00ff;
+  color: var(--primary);
   font-weight: bolder;
 }
 
 .admin-value {
-  color: #1b998b;
+  color: var(--highlight);
   font-weight: bold;
   font-family: var(--mono);
 }
 
 .admin-button {
   padding: 10px 20px;
-  background-color: #9d00ff;
-  color: #ded8c2;
+  background-color: var(--primary);
+  color: var(--secondary);
   border: 1px solid #6b6375;
   border-radius: 5px;
   font-weight: bolder;
@@ -55,7 +55,7 @@
 }
 
 .admin-button:hover {
-  background-color: #8400d6;
+  background-color: var(--primary-hover);
 }
 
 .admin-offset {
@@ -69,7 +69,7 @@
   border: 1px solid #6b6375;
   border-radius: 5px;
   background-color: #ded8c2;
-  color: #1b998b;
+  color: var(--highlight);
   font-weight: bold;
   font-family: var(--mono);
   width: 120px;
