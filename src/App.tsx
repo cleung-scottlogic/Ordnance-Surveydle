@@ -13,15 +13,11 @@ import { getScoreForGuess } from './ScoringService';
 
 function App() {
   const [guesses, setGuesses] = useState<LatLng[]>([]);
-  const [currentGuessLocation, setCurrentGuessLocation] = useState<
-    LatLng | undefined
-  >();
+  const [currentGuessLocation, setCurrentGuessLocation] = useState<LatLng | undefined>();
   const [endScreenOpen, setEndScreenOpen] = useState(false);
   const [howToPlayOpen, setHowToPlayOpen] = useState(false);
 
-  const [startingLocale, setStartingLocale] = useState<
-    DailyLocation | undefined
-  >();
+  const [startingLocale, setStartingLocale] = useState<DailyLocation | undefined>();
 
   useEffect(() => {
     void fetchDailyLocation().then(setStartingLocale);
@@ -55,19 +51,17 @@ function App() {
 
   const answerLocation = new LatLng(origin.lat, origin.lng);
 
-  const hasPerfectGuess = guesses.some(
-    (guess) => getScoreForGuess(guess, answerLocation) === 1000,
-  );
+  const hasPerfectGuess = guesses.some((guess) => getScoreForGuess(guess, answerLocation) === 1000);
 
   const isGameOver = guesses.length >= 5 || hasPerfectGuess;
 
-  const boundFactor = ZOOM_LEVELS[guesses.length].boundsFactor * 4;
+  // On a win, show the map as if 5 guesses had been made instead of locking to zoom level 1.
+  const zoomLevelIndex = hasPerfectGuess ? ZOOM_LEVELS.length - 1 : guesses.length;
 
-  const historicalMaxZoom = hasPerfectGuess ? 1 : ZOOM_LEVELS[0].zoom;
-  const historicalZoom = Math.min(
-    ZOOM_LEVELS[guesses.length].zoom,
-    historicalMaxZoom,
-  );
+  const boundFactor = ZOOM_LEVELS[zoomLevelIndex].boundsFactor * 4;
+
+  const historicalMaxZoom = ZOOM_LEVELS[0].zoom;
+  const historicalZoom = ZOOM_LEVELS[zoomLevelIndex].zoom;
 
   const historicalMapContainerProps: MapContainerProps = {
     center: origin,
@@ -106,8 +100,7 @@ function App() {
     const updatedGuesses = guesses.concat(currentGuessLocation);
     setGuesses(updatedGuesses);
 
-    const isPerfect =
-      getScoreForGuess(currentGuessLocation, answerLocation) === 1000;
+    const isPerfect = getScoreForGuess(currentGuessLocation, answerLocation) === 1000;
     if (updatedGuesses.length >= 5 || isPerfect) {
       setEndScreenOpen(true);
     }
@@ -115,14 +108,11 @@ function App() {
 
   return (
     <>
-      <button
-        className='how-to-play-button'
-        onClick={() => setHowToPlayOpen(true)}
-      >
+      <button className="how-to-play-button" onClick={() => setHowToPlayOpen(true)}>
         How to Play
       </button>
       <HowToPlay open={howToPlayOpen} onClose={() => setHowToPlayOpen(false)} />
-      <section id='center'>
+      <section id="center">
         <MapView
           key={guesses.length}
           mapContainerProps={historicalMapContainerProps}
@@ -131,7 +121,7 @@ function App() {
           isCustomMarkerEnabled={false}
           fixedMarker={new L.LatLng(origin.lat, origin.lng)}
         ></MapView>
-        <section id='progress'>
+        <section id="progress">
           <Progress answerLocation={answerLocation} guesses={guesses} />
           <button
             title={isGameOver ? 'Results' : 'Submit'}
@@ -153,9 +143,7 @@ function App() {
           attribution={DataService.osmAttribution}
           isCustomMarkerEnabled={true}
           existingMarkers={guesses}
-          setCurrentMarkerLocation={(location) =>
-            setCurrentGuessLocation(location)
-          }
+          setCurrentMarkerLocation={(location) => setCurrentGuessLocation(location)}
         ></MapView>
         <EndScreen
           open={endScreenOpen}
