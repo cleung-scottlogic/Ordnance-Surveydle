@@ -9,7 +9,7 @@ import Progress from './Progress/Progress';
 import { ZOOM_LEVELS } from './Map/ZoomLevel';
 import EndScreen from './EndScreen/EndScreen';
 import HowToPlay from './HowToPlay/HowToPlay';
-import { getScoreForGuess } from './ScoringService';
+import { getDistanceKm, getScoreForGuess } from './ScoringService';
 
 function App() {
   const [guesses, setGuesses] = useState<LatLng[]>([]);
@@ -21,6 +21,8 @@ function App() {
   const [topMapFlex, setTopMapFlex] = useState(0.5);
   const mapsRef = useRef<HTMLElement>(null);
   const isDraggingSplit = useRef(false);
+  // last guess distance, briefly shown as a large fading overlay
+  const [scorePop, setScorePop] = useState<{ distance: number; id: number } | null>(null);
 
   const [startingLocale, setStartingLocale] = useState<DailyLocation | undefined>();
 
@@ -127,10 +129,16 @@ function App() {
   const handleSubmit = () => {
     if (!currentGuessLocation) return;
 
+    const score = getScoreForGuess(currentGuessLocation, answerLocation);
+    const distance = getDistanceKm(currentGuessLocation, answerLocation);
+    if (distance !== undefined) {
+      setScorePop({ distance, id: Date.now() });
+    }
+
     const updatedGuesses = guesses.concat(currentGuessLocation);
     setGuesses(updatedGuesses);
 
-    const isPerfect = getScoreForGuess(currentGuessLocation, answerLocation) === 1000;
+    const isPerfect = score === 1000;
     if (updatedGuesses.length >= 5 || isPerfect) {
       setEndScreenOpen(true);
     }
@@ -168,6 +176,12 @@ function App() {
           )}
         </section>
         <section id="maps" ref={mapsRef}>
+          {scorePop && (
+            <div key={scorePop.id} className="score-pop" onAnimationEnd={() => setScorePop(null)}>
+              <span className="score-pop-distance">{scorePop.distance.toFixed(2)} km</span>
+              <span className="score-pop-away">away</span>
+            </div>
+          )}
           <div className="map-pane" style={{ flexGrow: topMapFlex }}>
             <MapView
               key={guesses.length}

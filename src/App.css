@@ -187,3 +187,51 @@
 .progress-toggle:hover {
   opacity: 1;
 }
+
+/* large distance that briefly pops up after a guess, then fades */
+.score-pop {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 5000;
+  font-size: 13vw;
+  font-weight: 900;
+  line-height: 1;
+  white-space: nowrap;
+  text-align: center;
+  color: var(--secondary);
+  text-shadow: 0 6px 30px rgba(0, 0, 0, 0.55);
+  pointer-events: none;
+  animation: score-pop 1.7s ease-out forwards;
+}
+
+.score-pop-distance,
+.score-pop-away {
+  display: block;
+}
+
+.score-pop-away {
+  font-size: 0.5em;
+}
+
+@keyframes score-pop {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.3);
+  }
+  15% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.15);
+  }
+  30% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  70% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.1);
+  }
+}
