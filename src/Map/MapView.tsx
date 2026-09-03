@@ -1,7 +1,13 @@
-import { MapContainer, TileLayer, useMap, type MapContainerProps } from 'react-leaflet';
+import {
+  MapContainer,
+  TileLayer,
+  ZoomControl,
+  useMap,
+  type MapContainerProps,
+} from 'react-leaflet';
 import './MapView.css';
 import LocationMarker from './LocationMarker';
-import type { LatLng } from 'leaflet';
+import type { ControlPosition, LatLng } from 'leaflet';
 import { useEffect } from 'react';
 
 interface MapProps {
@@ -18,6 +24,8 @@ interface MapProps {
   autoFlyToFixedMarker?: boolean;
   /** closest marker to highlight in LocationMarker */
   closestMarker?: LatLng;
+  /** render the zoom control at a specific corner (disables the default control) */
+  zoomControlPosition?: ControlPosition;
 }
 
 function MapController({
@@ -63,11 +71,29 @@ function MapController({
   return null;
 }
 
+// Keep Leaflet in sync when its container is resized (e.g. dragging the map divider).
+function ResizeInvalidator() {
+  const map = useMap();
+
+  useEffect(() => {
+    const container = map.getContainer();
+    const observer = new ResizeObserver(() => {
+      map.invalidateSize({ animate: false });
+    });
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, [map]);
+
+  return null;
+}
+
 function MapView(props: MapProps) {
   return (
     <>
       <MapContainer {...props.mapContainerProps}>
         <TileLayer attribution={props.attribution} url={props.tileLayer} />
+        <ResizeInvalidator />
+        {props.zoomControlPosition ? <ZoomControl position={props.zoomControlPosition} /> : null}
         {props.fixedMarker ? (
           <MapController
             fixedMarker={props.fixedMarker}
