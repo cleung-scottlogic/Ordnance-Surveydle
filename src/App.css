@@ -80,6 +80,8 @@
   align-items: stretch;
   padding: 12px;
   box-sizing: border-box;
+  transition: width 0.2s ease;
+  position: relative;
 
   .placeholder {
     width: 100%;
@@ -118,4 +120,36 @@
     font-weight: bold;
     font-size: 0.85em;
   }
+}
+
+#progress.collapsed {
+  width: 32px;
+  padding: 12px 4px;
+  align-items: center;
+}
+
+/* toggle straddles the boundary between the sidebar and the maps, vertically centred */
+.progress-toggle {
+  position: absolute;
+  top: 50%;
+  right: -18px;
+  transform: translateY(-50%);
+  z-index: 1000;
+  width: 36px;
+  height: 48px;
+  padding: 0;
+  line-height: 1;
+  font-size: 24px;
+  font-weight: bold;
+  border: 1px solid #6b6375;
+  border-radius: 5px;
+  background-color: var(--panel);
+  color: var(--secondary);
+  cursor: pointer;
+  opacity: 0.85;
+  transition: opacity 0.15s ease;
+}
+
+.progress-toggle:hover {
+  opacity: 1;
 }
