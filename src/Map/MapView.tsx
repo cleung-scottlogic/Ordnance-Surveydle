@@ -71,11 +71,28 @@ function MapController({
   return null;
 }
 
+// Keep Leaflet in sync when its container is resized (e.g. dragging the map divider).
+function ResizeInvalidator() {
+  const map = useMap();
+
+  useEffect(() => {
+    const container = map.getContainer();
+    const observer = new ResizeObserver(() => {
+      map.invalidateSize({ animate: false });
+    });
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, [map]);
+
+  return null;
+}
+
 function MapView(props: MapProps) {
   return (
     <>
       <MapContainer {...props.mapContainerProps}>
         <TileLayer attribution={props.attribution} url={props.tileLayer} />
+        <ResizeInvalidator />
         {props.zoomControlPosition ? <ZoomControl position={props.zoomControlPosition} /> : null}
         {props.fixedMarker ? (
           <MapController

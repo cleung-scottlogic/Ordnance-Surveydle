@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import './App.css';
 import MapView from './Map/MapView';
 import type { MapContainerProps } from 'react-leaflet';
@@ -17,6 +17,10 @@ function App() {
   const [endScreenOpen, setEndScreenOpen] = useState(false);
   const [howToPlayOpen, setHowToPlayOpen] = useState(false);
   const [progressCollapsed, setProgressCollapsed] = useState(false);
+  // fraction (0-1) of the vertical space given to the top map
+  const [topMapFlex, setTopMapFlex] = useState(0.5);
+  const mapsRef = useRef<HTMLElement>(null);
+  const isDraggingSplit = useRef(false);
 
   const [startingLocale, setStartingLocale] = useState<DailyLocation | undefined>();
 
@@ -39,6 +43,31 @@ function App() {
 
     window.addEventListener('storage', handleStorageChange);
     return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
+  // Drag the divider between the two maps to resize them.
+  useEffect(() => {
+    const handleMove = (event: MouseEvent) => {
+      if (!isDraggingSplit.current || !mapsRef.current) return;
+
+      const rect = mapsRef.current.getBoundingClientRect();
+      const ratio = (event.clientY - rect.top) / rect.height;
+      setTopMapFlex(Math.min(0.85, Math.max(0.15, ratio)));
+    };
+
+    const stopDragging = () => {
+      if (!isDraggingSplit.current) return;
+      isDraggingSplit.current = false;
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    };
+
+    window.addEventListener('mousemove', handleMove);
+    window.addEventListener('mouseup', stopDragging);
+    return () => {
+      window.removeEventListener('mousemove', handleMove);
+      window.removeEventListener('mouseup', stopDragging);
+    };
   }, []);
 
   if (!startingLocale) {
@@ -107,6 +136,15 @@ function App() {
     }
   };
 
+  const handleSplitterMouseDown = (event: React.MouseEvent) => {
+    // ignore drags that start on the submit button sitting on the divider
+    if (event.target !== event.currentTarget) return;
+    event.preventDefault();
+    isDraggingSplit.current = true;
+    document.body.style.cursor = 'row-resize';
+    document.body.style.userSelect = 'none';
+  };
+
   return (
     <>
       <HowToPlay open={howToPlayOpen} onClose={() => setHowToPlayOpen(false)} />
@@ -129,39 +167,49 @@ function App() {
             </>
           )}
         </section>
-        <section id="maps">
-          <MapView
-            key={guesses.length}
-            mapContainerProps={historicalMapContainerProps}
-            tileLayer={`${DataService.historicalTileLayer}${DataService.historicalTileLayerKey}`}
-            attribution={DataService.historicalAttribution}
-            isCustomMarkerEnabled={false}
-            zoomControlPosition="bottomright"
-            fixedMarker={new L.LatLng(origin.lat, origin.lng)}
-          ></MapView>
-          <MapView
-            mapContainerProps={osmMapContainerProps}
-            tileLayer={DataService.osmTileLayer}
-            attribution={DataService.osmAttribution}
-            isCustomMarkerEnabled={true}
-            zoomControlPosition="bottomright"
-            existingMarkers={guesses}
-            setCurrentMarkerLocation={(location) => setCurrentGuessLocation(location)}
-          ></MapView>
-          <button
-            className="submit-button"
-            title={isGameOver ? 'Results' : 'Submit'}
-            disabled={isGameOver ? false : isSubmitDisabled()}
-            onClick={() => {
-              if (isGameOver) {
-                setEndScreenOpen(true);
-              } else {
-                handleSubmit();
-              }
-            }}
-          >
-            {isGameOver ? 'Results' : 'Submit'}
-          </button>
+        <section id="maps" ref={mapsRef}>
+          <div className="map-pane" style={{ flexGrow: topMapFlex }}>
+            <MapView
+              key={guesses.length}
+              mapContainerProps={historicalMapContainerProps}
+              tileLayer={`${DataService.historicalTileLayer}${DataService.historicalTileLayerKey}`}
+              attribution={DataService.historicalAttribution}
+              isCustomMarkerEnabled={false}
+              zoomControlPosition="bottomright"
+              fixedMarker={new L.LatLng(origin.lat, origin.lng)}
+            ></MapView>
+          </div>
+          <div
+            className="map-splitter"
+            role="separator"
+            aria-orientation="horizontal"
+            onMouseDown={handleSplitterMouseDown}
+          ></div>
+          <div className="map-pane" style={{ flexGrow: 1 - topMapFlex }}>
+            <MapView
+              mapContainerProps={osmMapContainerProps}
+              tileLayer={DataService.osmTileLayer}
+              attribution={DataService.osmAttribution}
+              isCustomMarkerEnabled={true}
+              zoomControlPosition="bottomright"
+              existingMarkers={guesses}
+              setCurrentMarkerLocation={(location) => setCurrentGuessLocation(location)}
+            ></MapView>
+            <button
+              className="submit-button"
+              title={isGameOver ? 'Results' : 'Submit'}
+              disabled={isGameOver ? false : isSubmitDisabled()}
+              onClick={() => {
+                if (isGameOver) {
+                  setEndScreenOpen(true);
+                } else {
+                  handleSubmit();
+                }
+              }}
+            >
+              {isGameOver ? 'Results' : 'Submit'}
+            </button>
+          </div>
         </section>
         <EndScreen
           open={endScreenOpen}

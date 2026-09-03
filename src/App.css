@@ -24,24 +24,58 @@
 /* let the maps share the remaining vertical space instead of overflowing the viewport */
 #maps .leaflet-container {
   width: 100%;
-  flex: 1 1 0;
+  height: 100%;
   min-height: 0;
 }
 
-/* thin line separating the two stacked maps */
-#maps .leaflet-container + .leaflet-container {
-  border-top: 1px solid var(--border);
+/* each map lives in a pane whose flex-grow is driven by the draggable divider */
+.map-pane {
+  flex-basis: 0;
+  min-height: 0;
+  position: relative;
+  display: flex;
 }
 
-/* Submit/Results button overlaps the split between the two maps */
-.submit-button {
+/* draggable divider between the two stacked maps */
+.map-splitter {
+  flex: 0 0 8px;
+  position: relative;
+  background-color: var(--border);
+  cursor: row-resize;
+  z-index: 1000;
+}
+
+.map-splitter:hover {
+  background-color: var(--primary);
+}
+
+/* grip handle hinting the divider is draggable */
+.map-splitter::before {
+  content: '';
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+  width: 44px;
+  height: 4px;
+  border-radius: 2px;
+  background-color: var(--text);
+  pointer-events: none;
+}
+
+.map-splitter:hover::before {
+  background-color: var(--secondary);
+}
+
+/* Submit/Results button sits in the bottom map, vertically centred with its zoom controls */
+.submit-button {
+  position: absolute;
+  bottom: 30px;
+  right: 60px;
   z-index: 1000;
-  width: 100px;
-  height: 30px;
+  width: 130px;
+  height: 44px;
+  font-size: 1.05rem;
   background-color: var(--primary);
   color: var(--secondary);
   border-radius: 5px;
@@ -134,7 +168,7 @@
   top: 50%;
   right: -18px;
   transform: translateY(-50%);
-  z-index: 1000;
+  z-index: 1100;
   width: 36px;
   height: 48px;
   padding: 0;
