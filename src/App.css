@@ -42,6 +42,7 @@
   position: relative;
   background-color: var(--border);
   cursor: row-resize;
+  touch-action: none;
   z-index: 1000;
 }
 

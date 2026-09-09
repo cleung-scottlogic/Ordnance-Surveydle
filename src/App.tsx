@@ -49,12 +49,19 @@ function App() {
 
   // Drag the divider between the two maps to resize them.
   useEffect(() => {
-    const handleMove = (event: MouseEvent) => {
+    const moveTo = (clientY: number) => {
       if (!isDraggingSplit.current || !mapsRef.current) return;
 
       const rect = mapsRef.current.getBoundingClientRect();
-      const ratio = (event.clientY - rect.top) / rect.height;
+      const ratio = (clientY - rect.top) / rect.height;
       setTopMapFlex(Math.min(0.85, Math.max(0.15, ratio)));
+    };
+
+    const handleMove = (event: MouseEvent) => moveTo(event.clientY);
+    const handleTouchMove = (event: TouchEvent) => {
+      if (!isDraggingSplit.current) return;
+      event.preventDefault();
+      moveTo(event.touches[0].clientY);
     };
 
     const stopDragging = () => {
@@ -66,9 +73,15 @@ function App() {
 
     window.addEventListener('mousemove', handleMove);
     window.addEventListener('mouseup', stopDragging);
+    window.addEventListener('touchmove', handleTouchMove, { passive: false });
+    window.addEventListener('touchend', stopDragging);
+    window.addEventListener('touchcancel', stopDragging);
     return () => {
       window.removeEventListener('mousemove', handleMove);
       window.removeEventListener('mouseup', stopDragging);
+      window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('touchend', stopDragging);
+      window.removeEventListener('touchcancel', stopDragging);
     };
   }, []);
 
@@ -144,13 +157,22 @@ function App() {
     }
   };
 
-  const handleSplitterMouseDown = (event: React.MouseEvent) => {
+  const startSplitterDrag = (target: EventTarget, currentTarget: EventTarget) => {
     // ignore drags that start on the submit button sitting on the divider
-    if (event.target !== event.currentTarget) return;
-    event.preventDefault();
+    if (target !== currentTarget) return;
     isDraggingSplit.current = true;
     document.body.style.cursor = 'row-resize';
     document.body.style.userSelect = 'none';
+  };
+
+  const handleSplitterMouseDown = (event: React.MouseEvent) => {
+    if (event.target !== event.currentTarget) return;
+    event.preventDefault();
+    startSplitterDrag(event.target, event.currentTarget);
+  };
+
+  const handleSplitterTouchStart = (event: React.TouchEvent) => {
+    startSplitterDrag(event.target, event.currentTarget);
   };
 
   return (
@@ -198,6 +220,7 @@ function App() {
             role="separator"
             aria-orientation="horizontal"
             onMouseDown={handleSplitterMouseDown}
+            onTouchStart={handleSplitterTouchStart}
           ></div>
           <div className="map-pane" style={{ flexGrow: 1 - topMapFlex }}>
             <MapView
