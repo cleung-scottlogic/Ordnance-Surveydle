@@ -50,11 +50,6 @@ function EndScreen({
 
   const closestGuess = getClosestGuess();
 
-  const getBestScore = (): number => {
-    if (!guesses || guesses.length === 0) return 0;
-    return guesses.reduce((best, g) => Math.max(best, getScoreForGuess(g, startingMarker) ?? 0), 0);
-  };
-
   const getScoreEmoji = (score: number): string => {
     if (score >= 1000) return '✅';
     if (score >= 800) return '🟩';
@@ -66,17 +61,15 @@ function EndScreen({
   const gameUrl = 'https://osdle.kaiming.uk/';
 
   const buildShareText = (): string => {
-    const bestScore = getBestScore();
-    const lines = [`[Ordnance Surveydle](${gameUrl}) — ${bestScore} pts`];
+    const lines = [`[Ordnance Surveydle](${gameUrl})`];
 
     if (guesses && guesses.length > 0) {
       guesses.forEach((g, i) => {
         const km = getDistanceKm(g, startingMarker);
         const score = getScoreForGuess(g, startingMarker);
         const distLabel = km === undefined ? '-' : `${km.toFixed(2)} km`;
-        const scoreLabel = score !== undefined ? `${score} pts` : '';
         const emoji = getScoreEmoji(score ?? 0);
-        lines.push(`${emoji} Guess ${i + 1}: ${distLabel} - ${scoreLabel}`);
+        lines.push(`${emoji} Guess ${i + 1}: ${distLabel}`);
       });
     } else {
       lines.push('No guesses were made.');
@@ -162,14 +155,11 @@ function EndScreen({
 
     const items = guesses.map((g, i) => {
       const km = getDistanceKm(g, startingMarker);
-      const score = getScoreForGuess(g, startingMarker);
       const distLabel = km === undefined ? '-' : `${km.toFixed(2)} km away`;
-      const scoreLabel = score !== undefined ? ` - ${score} pts` : '';
       const isClosest = closestGuess && g.equals(closestGuess);
       return (
         <div key={i} className={`guess-item ${isClosest ? 'closest' : ''}`}>
           <strong>Guess {i + 1}:</strong> {distLabel}
-          {scoreLabel}
         </div>
       );
     });

@@ -23,8 +23,8 @@ function HowToPlay({ open, onClose }: { open: boolean; onClose?: () => void }) {
           Find the location on the historical map and click on the bottom map to make your guess.
         </p>
         <p>
-          The closer your guess is to the actual location, the more points you will score. If you
-          find the exact location, you will score 1000 points and the game will end.
+          Try to get as close as possible to the actual location. If you find the exact location,
+          the game will end.
         </p>
       </div>
     </Dialog>
