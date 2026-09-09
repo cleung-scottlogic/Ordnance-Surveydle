@@ -213,6 +213,7 @@ function App() {
               isCustomMarkerEnabled={false}
               zoomControlPosition="bottomright"
               fixedMarker={new L.LatLng(origin.lat, origin.lng)}
+              enableRecenter={true}
             ></MapView>
           </div>
           <div

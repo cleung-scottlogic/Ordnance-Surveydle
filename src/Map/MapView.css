@@ -2,3 +2,25 @@
   width: 100%;
   height: 100%;
 }
+
+.recenter-button {
+  position: absolute;
+  bottom: 30px;
+  right: 60px;
+  z-index: 1000;
+  width: 130px;
+  height: 44px;
+  font-size: 1.05rem;
+  background-color: var(--primary);
+  color: var(--secondary);
+  border-radius: 5px;
+  border: 1px solid #6b6375;
+  font-weight: bolder;
+  cursor: pointer;
+  opacity: 0.85;
+  transition: opacity 0.15s ease;
+}
+
+.recenter-button:hover {
+  opacity: 1;
+}

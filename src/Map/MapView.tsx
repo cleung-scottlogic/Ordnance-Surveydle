@@ -7,8 +7,8 @@ import {
 } from 'react-leaflet';
 import './MapView.css';
 import LocationMarker from './LocationMarker';
-import type { ControlPosition, LatLng } from 'leaflet';
-import { useEffect } from 'react';
+import L, { type ControlPosition, type LatLng } from 'leaflet';
+import { useEffect, useRef } from 'react';
 
 interface MapProps {
   tileLayer: string;
@@ -26,6 +26,8 @@ interface MapProps {
   closestMarker?: LatLng;
   /** render the zoom control at a specific corner (disables the default control) */
   zoomControlPosition?: ControlPosition;
+  /** show a button that recenters the map on the fixedMarker */
+  enableRecenter?: boolean;
 }
 
 function MapController({
@@ -71,6 +73,36 @@ function MapController({
   return null;
 }
 
+// A button that recenters the map on the given target when clicked.
+function RecenterButton({ target, zoom }: { target: LatLng; zoom?: number }) {
+  const map = useMap();
+  const buttonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!buttonRef.current) return;
+    // Stop clicks/scrolls on the button from reaching the map underneath.
+    L.DomEvent.disableClickPropagation(buttonRef.current);
+    L.DomEvent.disableScrollPropagation(buttonRef.current);
+  }, []);
+
+  const handleClick = () => {
+    map.flyTo([target.lat, target.lng], zoom ?? map.getZoom());
+  };
+
+  return (
+    <button
+      ref={buttonRef}
+      type="button"
+      className="recenter-button"
+      aria-label="Recentre on marker"
+      title="Recentre on marker"
+      onClick={handleClick}
+    >
+      Recentre
+    </button>
+  );
+}
+
 // Keep Leaflet in sync when its container is resized (e.g. dragging the map divider).
 function ResizeInvalidator() {
   const map = useMap();
@@ -94,6 +126,9 @@ function MapView(props: MapProps) {
         <TileLayer attribution={props.attribution} url={props.tileLayer} />
         <ResizeInvalidator />
         {props.zoomControlPosition ? <ZoomControl position={props.zoomControlPosition} /> : null}
+        {props.enableRecenter && props.fixedMarker ? (
+          <RecenterButton target={props.fixedMarker} zoom={props.zoomToFixedMarker} />
+        ) : null}
         {props.fixedMarker ? (
           <MapController
             fixedMarker={props.fixedMarker}
