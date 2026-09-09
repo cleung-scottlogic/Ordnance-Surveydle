@@ -8,10 +8,16 @@ interface ProgressProps {
 }
 
 function Progress(props: ProgressProps) {
+  const distances = props.guesses.map((guess) => getDistanceKm(guess, props.answerLocation));
+  const closestDistance = distances.reduce<number | undefined>((best, distance) => {
+    if (distance === undefined) return best;
+    return best === undefined ? distance : Math.min(best, distance);
+  }, undefined);
+
   const getGuess = (i: number): JSX.Element | null => {
     if (i > props.guesses.length - 1) return null;
 
-    const distance = getDistanceKm(props.guesses[i], props.answerLocation);
+    const distance = distances[i];
 
     return (
       <>
@@ -32,9 +38,10 @@ function Progress(props: ProgressProps) {
     let placeholders: JSX.Element[] = [];
 
     for (let i = 0; i < 5; i++) {
+      const isClosest = closestDistance !== undefined && distances[i] === closestDistance;
       placeholders = placeholders.concat(
         <div className="placeholder">
-          <div className="rectangle">{getContent(i)}</div>
+          <div className={`rectangle${isClosest ? ' closest' : ''}`}>{getContent(i)}</div>
         </div>,
       );
     }
