@@ -42,6 +42,7 @@
   position: relative;
   background-color: var(--border);
   cursor: row-resize;
+  touch-action: none;
   z-index: 1000;
 }
 
@@ -136,6 +137,16 @@
     gap: 2px;
     padding: 4px 6px;
     box-sizing: border-box;
+  }
+
+  .rectangle.closest {
+    border-color: var(--primary);
+    background-color: rgba(123, 57, 173, 0.25);
+    box-shadow: 0 0 0 1px var(--primary);
+  }
+
+  .rectangle.clickable {
+    cursor: pointer;
   }
 
   .magnifyingGlass {
