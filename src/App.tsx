@@ -23,6 +23,8 @@ function App() {
   const isDraggingSplit = useRef(false);
   // last guess distance, briefly shown as a large fading overlay
   const [scorePop, setScorePop] = useState<{ distance: number; id: number } | null>(null);
+  // request for the bottom map to pan to a guessed location
+  const [panTarget, setPanTarget] = useState<{ location: LatLng; nonce: number } | undefined>();
 
   const [startingLocale, setStartingLocale] = useState<DailyLocation | undefined>();
 
@@ -193,7 +195,11 @@ function App() {
               <button className="how-to-play-button" onClick={() => setHowToPlayOpen(true)}>
                 How to Play
               </button>
-              <Progress answerLocation={answerLocation} guesses={guesses} />
+              <Progress
+                answerLocation={answerLocation}
+                guesses={guesses}
+                onGuessClick={(guess) => setPanTarget({ location: guess, nonce: Date.now() })}
+              />
             </>
           )}
         </section>
@@ -231,6 +237,7 @@ function App() {
               isCustomMarkerEnabled={true}
               zoomControlPosition="bottomright"
               existingMarkers={guesses}
+              panTo={panTarget}
               setCurrentMarkerLocation={(location) => setCurrentGuessLocation(location)}
             ></MapView>
             <button

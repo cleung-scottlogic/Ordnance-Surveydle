@@ -145,6 +145,10 @@
     box-shadow: 0 0 0 1px var(--primary);
   }
 
+  .rectangle.clickable {
+    cursor: pointer;
+  }
+
   .magnifyingGlass {
     align-self: center;
     display: inline;

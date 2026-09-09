@@ -28,6 +28,8 @@ interface MapProps {
   zoomControlPosition?: ControlPosition;
   /** show a button that recenters the map on the fixedMarker */
   enableRecenter?: boolean;
+  /** pan the map to a location; bump nonce to re-trigger for the same location */
+  panTo?: { location: LatLng; nonce: number };
 }
 
 function MapController({
@@ -103,6 +105,18 @@ function RecenterButton({ target, zoom }: { target: LatLng; zoom?: number }) {
   );
 }
 
+// Pans the map to a requested location whenever the request changes.
+function PanController({ panTo }: { panTo?: { location: LatLng; nonce: number } }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (!panTo) return;
+    map.panTo([panTo.location.lat, panTo.location.lng]);
+  }, [map, panTo]);
+
+  return null;
+}
+
 // Keep Leaflet in sync when its container is resized (e.g. dragging the map divider).
 function ResizeInvalidator() {
   const map = useMap();
@@ -129,6 +143,7 @@ function MapView(props: MapProps) {
         {props.enableRecenter && props.fixedMarker ? (
           <RecenterButton target={props.fixedMarker} zoom={props.zoomToFixedMarker} />
         ) : null}
+        {props.panTo ? <PanController panTo={props.panTo} /> : null}
         {props.fixedMarker ? (
           <MapController
             fixedMarker={props.fixedMarker}
