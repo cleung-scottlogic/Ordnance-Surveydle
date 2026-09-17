@@ -5,9 +5,15 @@ import './EndScreen.css';
 import { type MapContainerProps } from 'react-leaflet';
 import type { LatLng } from 'leaflet';
 import { DataService, type DailyLocation } from '../DataService';
-import { getDistanceKm, getDistanceMeters, getScoreForGuess } from '../ScoringService';
+import {
+  getDistanceKm,
+  getDistanceMeters,
+  getScoreForGuess,
+} from '../ScoringService';
 
 import MapView from '../Map/MapView';
+import { Score } from '../Scores/Score';
+import { AwsService } from '../Aws/AwsService';
 
 function EndScreen({
   open,
@@ -24,6 +30,7 @@ function EndScreen({
 }) {
   const [copied, setCopied] = useState(false);
   const summaryRef = useRef<HTMLElement>(null);
+  const [playerName, setPlayerName] = useState<string | undefined>(void 0);
 
   const osmMapContainerProps: MapContainerProps = {
     center: startingMarker,
@@ -38,7 +45,8 @@ function EndScreen({
     let minDistance = getDistanceMeters(guesses[0], startingMarker) ?? Infinity;
 
     for (let i = 1; i < guesses.length; i++) {
-      const distance = getDistanceMeters(guesses[i], startingMarker) ?? Infinity;
+      const distance =
+        getDistanceMeters(guesses[i], startingMarker) ?? Infinity;
       if (distance < minDistance) {
         minDistance = distance;
         closest = guesses[i];
@@ -99,7 +107,8 @@ function EndScreen({
     container.appendChild(textarea);
 
     const selection = document.getSelection();
-    const previousRange = selection && selection.rangeCount > 0 ? selection.getRangeAt(0) : null;
+    const previousRange =
+      selection && selection.rangeCount > 0 ? selection.getRangeAt(0) : null;
 
     textarea.focus();
     textarea.select();
@@ -164,20 +173,32 @@ function EndScreen({
       );
     });
 
-    return <div className="guess-list">{items}</div>;
+    return <div className='guess-list'>{items}</div>;
+  };
+
+  const handleSave = () => {
+    if (playerName == void 0) return;
+    if (guesses == void 0 || guesses.length === 0) return;
+
+    const score = new Score(playerName, guesses, new Date());
+    AwsService.saveResult(score);
   };
 
   const guessListElement = renderGuessList();
 
   return (
     <>
-      <Dialog className="end-screen" open={open} onClose={onClose}>
-        <button className="end-screen-close" aria-label="close" onClick={onClose}>
+      <Dialog className='end-screen' open={open} onClose={onClose}>
+        <button
+          className='end-screen-close'
+          aria-label='close'
+          onClick={onClose}
+        >
           &times;
         </button>
-        <DialogTitle className="title">Game Over</DialogTitle>
-        <div className="end-screen-content">
-          <div className="end-screen-map">
+        <DialogTitle className='title'>Game Over</DialogTitle>
+        <div className='end-screen-content'>
+          <div className='end-screen-map'>
             <MapView
               mapContainerProps={osmMapContainerProps}
               tileLayer={DataService.osmTileLayer}
@@ -190,45 +211,61 @@ function EndScreen({
             />
           </div>
 
-          <aside className="end-screen-summary" ref={summaryRef}>
+          <aside className='end-screen-summary' ref={summaryRef}>
             {location && (
-              <div className="location-details">
+              <div className='location-details'>
                 <h3>{location.primaryPlaceName}</h3>
-                <p className="location-field">
-                  <span className="location-label">Type:</span> {location.type}
+                <p className='location-field'>
+                  <span className='location-label'>Type:</span> {location.type}
                 </p>
-                <p className="location-field">
-                  <span className="location-label">County:</span> {location.historicCounty}
+                <p className='location-field'>
+                  <span className='location-label'>County:</span>{' '}
+                  {location.historicCounty}
                 </p>
                 {location.civilParish && (
-                  <p className="location-field">
-                    <span className="location-label">Civil Parish:</span> {location.civilParish}
+                  <p className='location-field'>
+                    <span className='location-label'>Civil Parish:</span>{' '}
+                    {location.civilParish}
                   </p>
                 )}
                 {location.unitaryAuthorityArea && (
-                  <p className="location-field">
-                    <span className="location-label">Unitary Authority Area:</span>{' '}
+                  <p className='location-field'>
+                    <span className='location-label'>
+                      Unitary Authority Area:
+                    </span>{' '}
                     {location.unitaryAuthorityArea}
                   </p>
                 )}
-                <p className="location-field">
-                  <span className="location-label">Country:</span> {location.country}
+                <p className='location-field'>
+                  <span className='location-label'>Country:</span>{' '}
+                  {location.country}
                 </p>
-                <p className="location-field">
-                  <span className="location-label">Lat/Lng:</span> {location.lat.toFixed(5)},{' '}
-                  {location.lng.toFixed(5)}
+                <p className='location-field'>
+                  <span className='location-label'>Lat/Lng:</span>{' '}
+                  {location.lat.toFixed(5)}, {location.lng.toFixed(5)}
                 </p>
                 {location.description && (
-                  <p className="location-field">
-                    <span className="location-label">Description:</span> {location.description}
+                  <p className='location-field'>
+                    <span className='location-label'>Description:</span>{' '}
+                    {location.description}
                   </p>
                 )}
               </div>
             )}
             <h3>Game Summary</h3>
             {guessListElement}
-            <button className="share-button" onClick={handleShare}>
+            <button className='share-button' onClick={handleShare}>
               {copied ? 'Copied!' : 'Share Results'}
+            </button>
+            <input
+              id='player-name'
+              placeholder='Enter Name'
+              onInput={(e) =>
+                setPlayerName((e.target as HTMLInputElement).value)
+              }
+            />
+            <button disabled={playerName == void 0} onClick={handleSave}>
+              Submit Result
             </button>
           </aside>
         </div>
