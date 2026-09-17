@@ -69,9 +69,21 @@ export function getScoreForGuess(guess?: LatLng, answer?: LatLng): number | unde
   return meters !== undefined ? calculateScore(meters) : undefined;
 }
 
+/**
+ * Format a distance in meters, switching to meters (no decimals) under 1km
+ * and kilometers (2 decimals) at or above it.
+ */
+export function formatDistance(meters: number): string {
+  if (meters < 1000) {
+    return `${Math.round(meters)}m`;
+  }
+  return `${(meters / 1000).toFixed(2)}km`;
+}
+
 export default {
   calculateScore,
   getDistanceMeters,
   getDistanceKm,
   getScoreForGuess,
+  formatDistance,
 };

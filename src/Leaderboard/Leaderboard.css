@@ -1,0 +1,38 @@
+.leaderboard {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.leaderboard-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.leaderboard-item {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 0.9rem;
+}
+
+.leaderboard-rank {
+  font-weight: bold;
+  color: var(--primary);
+  min-width: 1.5em;
+}
+
+.leaderboard-player {
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.leaderboard-distance {
+  color: rgba(255, 255, 255, 0.7);
+}
