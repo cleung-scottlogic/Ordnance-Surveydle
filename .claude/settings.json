@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "FileChanged": [
+      {
+        "matcher": "Edit|MultiEdit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "vp check --fix"
+          }
+        ]
+      }
+    ]
+  }
+}
