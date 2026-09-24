@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react';
 import './AdminPage.css';
-import { getDailyStartingLocation, getSeedOffset, triggerSeedReroll } from '../DataService';
-import type { StartingLocation } from '../DataService';
+import { fetchDailyLocation, getSeedOffset, triggerSeedReroll } from '../DataService';
+import type { DailyLocation } from '../DataService';
 
 function AdminPage() {
-  const [startingLocation, setStartingLocation] = useState<StartingLocation | undefined>();
+  const [location, setLocation] = useState<DailyLocation | undefined>();
   const [offsetInput, setOffsetInput] = useState<string>(String(getSeedOffset()));
 
   useEffect(() => {
-    void getDailyStartingLocation().then(setStartingLocation);
+    void fetchDailyLocation().then(setLocation);
   }, []);
 
   const handleApplyOffset = () => {
@@ -18,11 +18,11 @@ function AdminPage() {
     }
 
     void triggerSeedReroll(offset)
-      .then(() => getDailyStartingLocation())
-      .then(setStartingLocation);
+      .then(() => fetchDailyLocation())
+      .then(setLocation);
   };
 
-  if (!startingLocation) {
+  if (!location) {
     return null;
   }
 
@@ -39,20 +39,20 @@ function AdminPage() {
 
       <div className="admin-details">
         <div className="admin-row">
+          <span className="admin-label">Place</span>
+          <span className="admin-value">{location.primaryPlaceName}</span>
+        </div>
+        <div className="admin-row">
           <span className="admin-label">Latitude</span>
-          <span className="admin-value">{startingLocation.lat}</span>
+          <span className="admin-value">{location.lat}</span>
         </div>
         <div className="admin-row">
           <span className="admin-label">Longitude</span>
-          <span className="admin-value">{startingLocation.lng}</span>
+          <span className="admin-value">{location.lng}</span>
         </div>
         <div className="admin-row">
           <span className="admin-label">Date</span>
           <span className="admin-value">{dateString}</span>
-        </div>
-        <div className="admin-row">
-          <span className="admin-label">Seed</span>
-          <span className="admin-value">{startingLocation.seed}</span>
         </div>
       </div>
 

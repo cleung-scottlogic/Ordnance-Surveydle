@@ -162,15 +162,17 @@ function EndScreen({
     }
   };
 
+  const trimmedPlayerName = playerName?.trim();
+
   const handleSave = () => {
-    if (playerName == void 0) return;
+    if (!trimmedPlayerName) return;
     if (guesses == void 0 || guesses.length === 0) return;
 
     const closestDistanceMeters = getDistanceMeters(closestGuess, startingMarker);
     if (closestDistanceMeters == void 0) return;
 
     const score = new Score(
-      playerName,
+      trimmedPlayerName,
       guesses,
       new Date(),
       Math.trunc(closestDistanceMeters * 100) / 100,
@@ -264,7 +266,7 @@ function EndScreen({
               />
               <button
                 className='save-result-button'
-                disabled={playerName == void 0}
+                disabled={!trimmedPlayerName}
                 onClick={handleSave}
               >
                 Submit Result
