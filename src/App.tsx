@@ -32,6 +32,11 @@ function App() {
     void fetchDailyLocation().then(setStartingLocale);
   }, []);
 
+  // Make sure the progress panel is visible whenever the results pop up opens.
+  useEffect(() => {
+    if (endScreenOpen) setProgressCollapsed(false);
+  }, [endScreenOpen]);
+
   // Propagate seed changes made on the admin page: reset the game to the new location.
   useEffect(() => {
     const handleStorageChange = (event: StorageEvent) => {
