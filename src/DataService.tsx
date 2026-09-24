@@ -1,6 +1,4 @@
-// import OsGridRef from "https://cdn.jsdelivr.net/npm/geodesy@2/osgridref.js?url";
-// @ts-expect-error
-import OsGridRef from 'geodesy/osgridref';
+import { AwsService } from './Aws/AwsService';
 
 interface DataService {
   osmTileLayer: string;
@@ -8,15 +6,6 @@ interface DataService {
   historicalTileLayer: string;
   historicalTileLayerKey: string;
   historicalAttribution: string;
-}
-
-export interface StartingLocation {
-  gridReference: string;
-  easting: string;
-  northing: string;
-  lat: number;
-  lng: number;
-  seed?: number;
 }
 
 export interface DailyLocation {
@@ -47,11 +36,6 @@ export const DataService: DataService = {
   // TODO: DELETE AND CREATE NEW KEY FOR VAULT
   historicalTileLayerKey: 'fIGLURh5nxHfE0ydIxke',
   historicalAttribution: `<a href="${import.meta.env.VITE_HISTORICAL_ATTRIBUTION}">National Library of Scotland</a>`,
-};
-
-const seededRandom = (seed: number): number => {
-  const x = Math.sin(seed) * 10000;
-  return x - Math.floor(x);
 };
 
 const SEED_OFFSET_KEY = 'mapgame:seedOffset';
@@ -93,61 +77,9 @@ export const triggerSeedReroll = async (reroll: number): Promise<void> => {
   }
 };
 
-// Public S3 bucket holding the current day's seed and location objects.
-const DAILY_BUCKET_URL =
-  'https://ckl-mapgame-daily-seeds-696537702940-eu-west-2-an.s3.eu-west-2.amazonaws.com';
-
-// Public S3 object holding the current day's seed as a raw JSON number, e.g. 2124808443.
-const DAILY_SEED_URL = `${DAILY_BUCKET_URL}/seed`;
-
-// Public S3 object holding the current day's location as a JSON gazetteer record.
-const DAILY_LOCATION_URL = `${DAILY_BUCKET_URL}/location`;
-
-const fetchDailySeed = async (): Promise<number> => {
-  const response = await fetch(DAILY_SEED_URL, { cache: 'no-store' });
-  if (!response.ok) {
-    throw new Error(`seed request failed: ${response.status}`);
-  }
-  const data = await response.json();
-  const seed = Number(data);
-  if (!Number.isFinite(seed)) {
-    throw new Error('seed missing or not a number');
-  }
-  return seed >>> 0;
-};
-
-// Raw gazetteer record shape as stored in S3, before mapping to DailyLocation.
-interface RawDailyLocation {
-  ID: string;
-  'GBPN URL': string;
-  'Primary Place Name': string;
-  'Grid Reference': string;
-  Latitude: string;
-  Longitude: string;
-  Type: string;
-  'Historic County': string;
-  Division: string | null;
-  Island: string | null;
-  Townland: string | null;
-  'Civil Parish': string | null;
-  'Administrative County': string | null;
-  District: string | null;
-  'Unitary Authority Area': string | null;
-  'Police Area': string | null;
-  Country: string;
-  Description: string | null;
-}
-
-// https://gazetteer.org.uk/contents
+// Fetches the raw S3 record via AwsService, then maps it to the app's DailyLocation shape.
 export const fetchDailyLocation = async (): Promise<DailyLocation> => {
-  const response = await fetch(DAILY_LOCATION_URL, { cache: 'no-store' });
-  if (!response.ok) {
-    throw new Error(`location request failed: ${response.status}`);
-  }
-  const data = (await response.json()) as RawDailyLocation;
-  if (!data || typeof data.ID !== 'string') {
-    throw new Error('location missing or malformed');
-  }
+  const data = await AwsService.fetchDailyLocation();
   return {
     id: data.ID,
     gbpnUrl: data['GBPN URL'],
@@ -168,49 +100,4 @@ export const fetchDailyLocation = async (): Promise<DailyLocation> => {
     country: data.Country,
     description: data.Description,
   };
-};
-
-// Generate a starting location deterministically from a seed value.
-const getStartingLocationFromSeed = (seed: number): StartingLocation => {
-  // prettier-ignore
-  const osGridSquares = [
-    "HU","NC","NG","NH",
-    "NJ","NO","NN","NM","NR","NS","NT","NZ",
-    "NY","NX","NY","NZ","SE","SD","SH",
-    "SJ","SK","TF","SN","SO","SP","TL",
-    "TM","TQ","SU","ST","SS","SX"
-  ];
-
-  // grid references that contain too much sea
-  // ,"HY",,"ND","NB",,"NF","TA","TG","TR","SW",    "NU"
-
-  const gridIndex = Math.floor(seededRandom(seed) * osGridSquares.length);
-  const eastingSeed = seed + 1;
-  const northingSeed = seed + 2;
-
-  const easting = Math.floor(seededRandom(eastingSeed) * 999)
-    .toString()
-    .padStart(3, '0');
-  const northing = Math.floor(seededRandom(northingSeed) * 999)
-    .toString()
-    .padStart(3, '0');
-
-  const gridReference = osGridSquares[gridIndex];
-  const gridRef = OsGridRef.parse(gridReference + easting + northing);
-  const wgs84 = gridRef.toLatLon();
-
-  return {
-    gridReference,
-    easting,
-    northing,
-    lat: wgs84._lat,
-    lng: wgs84._lon,
-    seed,
-  };
-};
-
-export const getDailyStartingLocation = async (): Promise<StartingLocation> => {
-  const seed = await fetchDailySeed();
-
-  return getStartingLocationFromSeed(seed);
 };

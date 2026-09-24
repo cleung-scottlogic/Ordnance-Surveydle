@@ -13,7 +13,6 @@
     "@emotion/styled": "^11.14.1",
     "@mui/material": "^9.1.2",
     "@mui/styled-engine": "^9.1.1",
-    "geodesy": "^2.4.0",
     "leaflet": "^1.9.4",
     "prettier": "^3.8.4",
     "proj4": "^2.20.9",
