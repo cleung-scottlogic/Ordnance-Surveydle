@@ -10,6 +10,15 @@ import { ZOOM_LEVELS } from './Map/ZoomLevel';
 import EndScreen from './EndScreen/EndScreen';
 import HowToPlay from './HowToPlay/HowToPlay';
 import { getDistanceKm, getScoreForGuess } from './ScoringService';
+import { loadDailyGame, saveDailyGuesses } from './StorageService';
+
+const MAX_GUESSES = 5;
+
+const hasPerfectGuess = (guesses: LatLng[], answer: LatLng): boolean =>
+  guesses.some((guess) => getScoreForGuess(guess, answer) === 1000);
+
+const isGameFinished = (guesses: LatLng[], answer: LatLng): boolean =>
+  guesses.length >= MAX_GUESSES || hasPerfectGuess(guesses, answer);
 
 function App() {
   const [guesses, setGuesses] = useState<LatLng[]>([]);
@@ -28,8 +37,17 @@ function App() {
 
   const [startingLocale, setStartingLocale] = useState<DailyLocation | undefined>();
 
+  // Switch to a newly fetched location, restoring any saved progress for it.
+  const applyLocation = (location: DailyLocation) => {
+    const savedGuesses = loadDailyGame(location.id)?.guesses ?? [];
+    setStartingLocale(location);
+    setGuesses(savedGuesses);
+    setCurrentGuessLocation(undefined);
+    setEndScreenOpen(isGameFinished(savedGuesses, new LatLng(location.lat, location.lng)));
+  };
+
   useEffect(() => {
-    void fetchDailyLocation().then(setStartingLocale);
+    void fetchDailyLocation().then(applyLocation);
   }, []);
 
   // Make sure the progress panel is visible whenever the results pop up opens.
@@ -42,12 +60,7 @@ function App() {
     const handleStorageChange = (event: StorageEvent) => {
       if (event.key !== 'mapgame:seedOffset') return;
 
-      void fetchDailyLocation().then((location) => {
-        setStartingLocale(location);
-        setGuesses([]);
-        setCurrentGuessLocation(undefined);
-        setEndScreenOpen(false);
-      });
+      void fetchDailyLocation().then(applyLocation);
     };
 
     window.addEventListener('storage', handleStorageChange);
@@ -103,12 +116,12 @@ function App() {
 
   const answerLocation = new LatLng(origin.lat, origin.lng);
 
-  const hasPerfectGuess = guesses.some((guess) => getScoreForGuess(guess, answerLocation) === 1000);
-
-  const isGameOver = guesses.length >= 5 || hasPerfectGuess;
+  const isGameOver = isGameFinished(guesses, answerLocation);
 
   // On a win, show the map as if 5 guesses had been made instead of locking to zoom level 1.
-  const zoomLevelIndex = hasPerfectGuess ? ZOOM_LEVELS.length - 1 : guesses.length;
+  const zoomLevelIndex = hasPerfectGuess(guesses, answerLocation)
+    ? ZOOM_LEVELS.length - 1
+    : guesses.length;
 
   const boundFactor = ZOOM_LEVELS[zoomLevelIndex].boundsFactor * 4;
 
@@ -157,9 +170,10 @@ function App() {
 
     const updatedGuesses = guesses.concat(currentGuessLocation);
     setGuesses(updatedGuesses);
+    saveDailyGuesses(startingLocale.id, updatedGuesses);
 
     const isPerfect = score === 1000;
-    if (updatedGuesses.length >= 5 || isPerfect) {
+    if (updatedGuesses.length >= MAX_GUESSES || isPerfect) {
       setEndScreenOpen(true);
     }
   };
@@ -262,6 +276,7 @@ function App() {
           </div>
         </section>
         <EndScreen
+          key={startingLocale.id}
           open={endScreenOpen}
           onClose={() => setEndScreenOpen(false)}
           startingMarker={new L.LatLng(origin.lat, origin.lng)}
