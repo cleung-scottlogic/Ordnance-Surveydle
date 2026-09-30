@@ -15,6 +15,13 @@ import MapView from '../Map/MapView';
 import { Score } from '../Scores/Score';
 import { AlreadySubmittedError, AwsService } from '../Aws/AwsService';
 import Leaderboard from '../Leaderboard/Leaderboard';
+import {
+  getPlayerName,
+  loadDailyGame,
+  markDailySubmitted,
+  normalisePlayerName,
+  setPlayerName as savePlayerName,
+} from '../StorageService';
 
 function EndScreen({
   open,
@@ -31,7 +38,10 @@ function EndScreen({
 }) {
   const [copied, setCopied] = useState(false);
   const summaryRef = useRef<HTMLElement>(null);
-  const [playerName, setPlayerName] = useState<string | undefined>(void 0);
+  const [playerName, setPlayerName] = useState(() => getPlayerName());
+  const [submittedName, setSubmittedName] = useState<string | undefined>(() =>
+    location ? loadDailyGame(location.id)?.submittedName : undefined,
+  );
   const [saveCount, setSaveCount] = useState(0);
   const [saveError, setSaveError] = useState<string | undefined>(void 0);
 
@@ -162,7 +172,14 @@ function EndScreen({
     }
   };
 
-  const trimmedPlayerName = playerName?.trim();
+  const trimmedPlayerName = normalisePlayerName(playerName.trim());
+
+  // Remember the name for future days and mark today's result as submitted.
+  const recordSubmission = (name: string) => {
+    savePlayerName(name);
+    if (location) markDailySubmitted(location.id, name);
+    setSubmittedName(name);
+  };
 
   const handleSave = () => {
     if (!trimmedPlayerName) return;
@@ -171,21 +188,25 @@ function EndScreen({
     const closestDistanceMeters = getDistanceMeters(closestGuess, startingMarker);
     if (closestDistanceMeters == void 0) return;
 
+    const name = trimmedPlayerName;
     const score = new Score(
-      trimmedPlayerName,
+      name,
       guesses,
       new Date(),
       Math.trunc(closestDistanceMeters * 100) / 100,
     );
     setSaveError(undefined);
     AwsService.saveResult(score)
-      .then(() => setSaveCount((c) => c + 1))
+      .then(() => {
+        recordSubmission(name);
+        setSaveCount((c) => c + 1);
+      })
       .catch((e) => {
-        setSaveError(
-          e instanceof AlreadySubmittedError
-            ? e.message
-            : 'Failed to save result. Please try again.',
-        );
+        if (e instanceof AlreadySubmittedError) {
+          recordSubmission(name);
+          return;
+        }
+        setSaveError('Failed to save result. Please try again.');
       });
   };
 
@@ -256,22 +277,30 @@ function EndScreen({
               </div>
             )}
             <div className='save-result'>
-              <input
-                id='player-name'
-                className='player-name-input'
-                placeholder='Enter Name'
-                onInput={(e) =>
-                  setPlayerName((e.target as HTMLInputElement).value)
-                }
-              />
-              <button
-                className='save-result-button'
-                disabled={!trimmedPlayerName}
-                onClick={handleSave}
-              >
-                Submit Result
-              </button>
-              {saveError && <p className='save-error'>{saveError}</p>}
+              {submittedName ? (
+                <p className='save-success'>Submitted as {submittedName}</p>
+              ) : (
+                <>
+                  <input
+                    id='player-name'
+                    className='player-name-input'
+                    placeholder='Enter Name'
+                    autoCapitalize='none'
+                    value={playerName}
+                    onChange={(e) =>
+                      setPlayerName(normalisePlayerName(e.target.value))
+                    }
+                  />
+                  <button
+                    className='save-result-button'
+                    disabled={!trimmedPlayerName}
+                    onClick={handleSave}
+                  >
+                    Submit Result
+                  </button>
+                  {saveError && <p className='save-error'>{saveError}</p>}
+                </>
+              )}
             </div>
             <button className='share-button' onClick={handleShare}>
               {copied ? 'Copied!' : 'Share Results'}
