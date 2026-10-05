@@ -1,6 +1,6 @@
 {
   "hooks": {
-    "FileChanged": [
+    "PostToolUse": [
       {
         "matcher": "Edit|MultiEdit|Write",
         "hooks": [
