@@ -6,7 +6,7 @@ import L, { LatLng } from 'leaflet';
 import { DataService, fetchDailyLocation } from './DataService';
 import type { DailyLocation } from './DataService';
 import Progress from './Progress/Progress';
-import { ZOOM_LEVELS } from './Map/ZoomLevel';
+import { MAX_ZOOM, ZOOM_LEVELS } from './Map/ZoomLevel';
 import EndScreen from './EndScreen/EndScreen';
 import HowToPlay from './HowToPlay/HowToPlay';
 import { getDistanceKm, getScoreForGuess } from './ScoringService';
@@ -125,7 +125,7 @@ function App() {
 
   const boundFactor = ZOOM_LEVELS[zoomLevelIndex].boundsFactor * 4;
 
-  const historicalMaxZoom = ZOOM_LEVELS[0].zoom;
+  const historicalMaxZoom = MAX_ZOOM;
   const historicalZoom = ZOOM_LEVELS[zoomLevelIndex].zoom;
 
   const historicalMapContainerProps: MapContainerProps = {

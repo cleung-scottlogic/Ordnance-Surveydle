@@ -21,7 +21,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 The central state (`guesses`, `currentGuessLocation`, `endScreenOpen`, `progressCollapsed`, etc.) lives in `App.tsx` and drives two side-by-side Leaflet maps rendered via the shared `Map/MapView.tsx`:
 
-- **Top map**: the historical NLS tile layer, centered on the answer. Its zoom level is looked up from `Map/ZoomLevel.tsx`'s `ZOOM_LEVELS` array by `guesses.length` — each guess zooms out one step (max zoom 16 down to 8), and `key={guesses.length}` forces a remount to apply it.
+- **Top map**: the historical NLS tile layer, centered on the answer. Its zoom level is looked up from `Map/ZoomLevel.tsx`'s `ZOOM_LEVELS` array by `guesses.length` — each guess zooms out one step (starting at zoom 14 down to 8; players can always zoom back in to `MAX_ZOOM`), and `key={guesses.length}` forces a remount to apply it.
 - **Bottom map**: modern OSM tiles where the player clicks to place a guess (`isCustomMarkerEnabled`), showing all previous guesses as markers.
 - A guess is "perfect" (score 1000, distance ≤ 100m) or the 5th guess ends the game (`isGameOver`), opening `EndScreen`.
 
