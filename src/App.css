@@ -4,11 +4,12 @@
   gap: 0;
   align-items: stretch;
   flex-grow: 1;
-  height: 100svh;
+  /* capped at a 2560x1440 (1440p) viewport so larger screens see no more map than that */
+  height: min(100svh, 1440px);
   min-height: 0;
   /* full-bleed: break out of #root's centered width so the maps reach the page edge */
-  width: 100vw;
-  margin-left: calc(50% - 50vw);
+  width: min(100vw, 2560px);
+  margin-left: calc(50% - min(100vw, 2560px) / 2);
   box-sizing: border-box;
   padding: 12px 0;
 }
