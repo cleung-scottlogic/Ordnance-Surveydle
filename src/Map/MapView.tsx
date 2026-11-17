@@ -30,6 +30,36 @@ interface MapProps {
   enableRecenter?: boolean;
   /** pan the map to a location; bump nonce to re-trigger for the same location */
   panTo?: { location: LatLng; nonce: number };
+  /**
+   * limit panning to a box of this size in screen pixels, centred on the map's initial center,
+   * at the map's minimum zoom. Independent of the actual container size.
+   */
+  boundsSize?: { width: number; height: number };
+}
+
+// Sets maxBounds to a fixed pixel-sized box so every device gets the same pan limit.
+function BoundsController({
+  center,
+  size,
+}: {
+  center: LatLng | [number, number];
+  size: { width: number; height: number };
+}) {
+  const map = useMap();
+
+  useEffect(() => {
+    const zoom = map.getMinZoom();
+    const middle = map.project(center, zoom);
+    const half = L.point(size.width / 2, size.height / 2);
+    map.setMaxBounds(
+      L.latLngBounds(
+        map.unproject(middle.subtract(half), zoom),
+        map.unproject(middle.add(half), zoom),
+      ),
+    );
+  }, [map, center, size.width, size.height]);
+
+  return null;
 }
 
 function MapController({
@@ -59,14 +89,20 @@ function MapController({
       try {
         map.flyTo([fixedMarker.lat, fixedMarker.lng], zoom);
       } catch (e) {
-        console.log('MapController: map.flyTo() failed, falling back to setView()', e);
+        console.log(
+          'MapController: map.flyTo() failed, falling back to setView()',
+          e,
+        );
         map.setView([fixedMarker.lat, fixedMarker.lng], zoom);
       }
     } else {
       try {
         map.panTo([fixedMarker.lat, fixedMarker.lng]);
       } catch (e) {
-        console.log('MapController: map.panTo() failed, falling back to setView()', e);
+        console.log(
+          'MapController: map.panTo() failed, falling back to setView()',
+          e,
+        );
         map.setView([fixedMarker.lat, fixedMarker.lng], map.getZoom());
       }
     }
@@ -94,10 +130,10 @@ function RecenterButton({ target, zoom }: { target: LatLng; zoom?: number }) {
   return (
     <button
       ref={buttonRef}
-      type="button"
-      className="recenter-button"
-      aria-label="Recentre on marker"
-      title="Recentre on marker"
+      type='button'
+      className='recenter-button'
+      aria-label='Recentre on marker'
+      title='Recentre on marker'
       onClick={handleClick}
     >
       Recentre
@@ -106,7 +142,11 @@ function RecenterButton({ target, zoom }: { target: LatLng; zoom?: number }) {
 }
 
 // Pans the map to a requested location whenever the request changes.
-function PanController({ panTo }: { panTo?: { location: LatLng; nonce: number } }) {
+function PanController({
+  panTo,
+}: {
+  panTo?: { location: LatLng; nonce: number };
+}) {
   const map = useMap();
 
   useEffect(() => {
@@ -139,9 +179,20 @@ function MapView(props: MapProps) {
       <MapContainer {...props.mapContainerProps}>
         <TileLayer attribution={props.attribution} url={props.tileLayer} />
         <ResizeInvalidator />
-        {props.zoomControlPosition ? <ZoomControl position={props.zoomControlPosition} /> : null}
+        {props.boundsSize && props.mapContainerProps.center ? (
+          <BoundsController
+            center={props.mapContainerProps.center as LatLng | [number, number]}
+            size={props.boundsSize}
+          />
+        ) : null}
+        {props.zoomControlPosition ? (
+          <ZoomControl position={props.zoomControlPosition} />
+        ) : null}
         {props.enableRecenter && props.fixedMarker ? (
-          <RecenterButton target={props.fixedMarker} zoom={props.zoomToFixedMarker} />
+          <RecenterButton
+            target={props.fixedMarker}
+            zoom={props.zoomToFixedMarker}
+          />
         ) : null}
         {props.panTo ? <PanController panTo={props.panTo} /> : null}
         {props.fixedMarker ? (
@@ -151,7 +202,9 @@ function MapView(props: MapProps) {
             autoFly={props.autoFlyToFixedMarker}
           />
         ) : null}
-        {props.fixedMarker || props.isCustomMarkerEnabled || props.existingMarkers?.length ? (
+        {props.fixedMarker ||
+        props.isCustomMarkerEnabled ||
+        props.existingMarkers?.length ? (
           <LocationMarker
             setCurrentLocation={props.setCurrentMarkerLocation || (() => {})}
             existingLocations={props.existingMarkers}

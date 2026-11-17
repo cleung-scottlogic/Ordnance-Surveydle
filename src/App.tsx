@@ -6,7 +6,7 @@ import L, { LatLng } from 'leaflet';
 import { DataService, fetchDailyLocation } from './DataService';
 import type { DailyLocation } from './DataService';
 import Progress from './Progress/Progress';
-import { MAX_ZOOM, ZOOM_LEVELS } from './Map/ZoomLevel';
+import { HISTORICAL_BOUNDS_SIZE, MAX_ZOOM, ZOOM_LEVELS } from './Map/ZoomLevel';
 import EndScreen from './EndScreen/EndScreen';
 import HowToPlay from './HowToPlay/HowToPlay';
 import { getDistanceKm, getScoreForGuess } from './ScoringService';
@@ -22,7 +22,9 @@ const isGameFinished = (guesses: LatLng[], answer: LatLng): boolean =>
 
 function App() {
   const [guesses, setGuesses] = useState<LatLng[]>([]);
-  const [currentGuessLocation, setCurrentGuessLocation] = useState<LatLng | undefined>();
+  const [currentGuessLocation, setCurrentGuessLocation] = useState<
+    LatLng | undefined
+  >();
   const [endScreenOpen, setEndScreenOpen] = useState(false);
   const [howToPlayOpen, setHowToPlayOpen] = useState(false);
   const [progressCollapsed, setProgressCollapsed] = useState(false);
@@ -31,11 +33,18 @@ function App() {
   const mapsRef = useRef<HTMLElement>(null);
   const isDraggingSplit = useRef(false);
   // last guess distance, briefly shown as a large fading overlay
-  const [scorePop, setScorePop] = useState<{ distance: number; id: number } | null>(null);
+  const [scorePop, setScorePop] = useState<{
+    distance: number;
+    id: number;
+  } | null>(null);
   // request for the bottom map to pan to a guessed location
-  const [panTarget, setPanTarget] = useState<{ location: LatLng; nonce: number } | undefined>();
+  const [panTarget, setPanTarget] = useState<
+    { location: LatLng; nonce: number } | undefined
+  >();
 
-  const [startingLocale, setStartingLocale] = useState<DailyLocation | undefined>();
+  const [startingLocale, setStartingLocale] = useState<
+    DailyLocation | undefined
+  >();
 
   // Switch to a newly fetched location, restoring any saved progress for it.
   const applyLocation = (location: DailyLocation) => {
@@ -43,7 +52,9 @@ function App() {
     setStartingLocale(location);
     setGuesses(savedGuesses);
     setCurrentGuessLocation(undefined);
-    setEndScreenOpen(isGameFinished(savedGuesses, new LatLng(location.lat, location.lng)));
+    setEndScreenOpen(
+      isGameFinished(savedGuesses, new LatLng(location.lat, location.lng)),
+    );
   };
 
   useEffect(() => {
@@ -123,8 +134,6 @@ function App() {
     ? ZOOM_LEVELS.length - 1
     : guesses.length;
 
-  const boundFactor = ZOOM_LEVELS[zoomLevelIndex].boundsFactor * 4;
-
   const historicalMaxZoom = MAX_ZOOM;
   const historicalZoom = ZOOM_LEVELS[zoomLevelIndex].zoom;
 
@@ -136,10 +145,6 @@ function App() {
     dragging: true,
     doubleClickZoom: false,
     zoomControl: false,
-    maxBounds: [
-      [origin.lat + boundFactor, origin.lng + boundFactor],
-      [origin.lat - boundFactor, origin.lng - boundFactor],
-    ],
     maxBoundsViscosity: 1,
     bounceAtZoomLimits: false,
   };
@@ -178,7 +183,10 @@ function App() {
     }
   };
 
-  const startSplitterDrag = (target: EventTarget, currentTarget: EventTarget) => {
+  const startSplitterDrag = (
+    target: EventTarget,
+    currentTarget: EventTarget,
+  ) => {
     // ignore drags that start on the submit button sitting on the divider
     if (target !== currentTarget) return;
     isDraggingSplit.current = true;
@@ -199,10 +207,10 @@ function App() {
   return (
     <>
       <HowToPlay open={howToPlayOpen} onClose={() => setHowToPlayOpen(false)} />
-      <section id="center">
-        <section id="progress" className={progressCollapsed ? 'collapsed' : ''}>
+      <section id='center'>
+        <section id='progress' className={progressCollapsed ? 'collapsed' : ''}>
           <button
-            className="progress-toggle"
+            className='progress-toggle'
             aria-label={progressCollapsed ? 'Expand panel' : 'Minimise panel'}
             title={progressCollapsed ? 'Expand panel' : 'Minimise panel'}
             onClick={() => setProgressCollapsed((collapsed) => !collapsed)}
@@ -211,56 +219,70 @@ function App() {
           </button>
           {!progressCollapsed && (
             <>
-              <button className="how-to-play-button" onClick={() => setHowToPlayOpen(true)}>
+              <button
+                className='how-to-play-button'
+                onClick={() => setHowToPlayOpen(true)}
+              >
                 How to Play
               </button>
               <Progress
                 answerLocation={answerLocation}
                 guesses={guesses}
-                onGuessClick={(guess) => setPanTarget({ location: guess, nonce: Date.now() })}
+                onGuessClick={(guess) =>
+                  setPanTarget({ location: guess, nonce: Date.now() })
+                }
               />
             </>
           )}
         </section>
-        <section id="maps" ref={mapsRef}>
+        <section id='maps' ref={mapsRef}>
           {scorePop && (
-            <div key={scorePop.id} className="score-pop" onAnimationEnd={() => setScorePop(null)}>
-              <span className="score-pop-distance">{scorePop.distance.toFixed(2)} km</span>
-              <span className="score-pop-away">away</span>
+            <div
+              key={scorePop.id}
+              className='score-pop'
+              onAnimationEnd={() => setScorePop(null)}
+            >
+              <span className='score-pop-distance'>
+                {scorePop.distance.toFixed(2)} km
+              </span>
+              <span className='score-pop-away'>away</span>
             </div>
           )}
-          <div className="map-pane" style={{ flexGrow: topMapFlex }}>
+          <div className='map-pane' style={{ flexGrow: topMapFlex }}>
             <MapView
               key={guesses.length}
               mapContainerProps={historicalMapContainerProps}
               tileLayer={`${DataService.historicalTileLayer}${DataService.historicalTileLayerKey}`}
               attribution={DataService.historicalAttribution}
               isCustomMarkerEnabled={false}
-              zoomControlPosition="bottomright"
+              zoomControlPosition='bottomright'
               fixedMarker={new L.LatLng(origin.lat, origin.lng)}
               enableRecenter={true}
+              boundsSize={HISTORICAL_BOUNDS_SIZE}
             ></MapView>
           </div>
           <div
-            className="map-splitter"
-            role="separator"
-            aria-orientation="horizontal"
+            className='map-splitter'
+            role='separator'
+            aria-orientation='horizontal'
             onMouseDown={handleSplitterMouseDown}
             onTouchStart={handleSplitterTouchStart}
           ></div>
-          <div className="map-pane" style={{ flexGrow: 1 - topMapFlex }}>
+          <div className='map-pane' style={{ flexGrow: 1 - topMapFlex }}>
             <MapView
               mapContainerProps={osmMapContainerProps}
               tileLayer={DataService.osmTileLayer}
               attribution={DataService.osmAttribution}
               isCustomMarkerEnabled={true}
-              zoomControlPosition="bottomright"
+              zoomControlPosition='bottomright'
               existingMarkers={guesses}
               panTo={panTarget}
-              setCurrentMarkerLocation={(location) => setCurrentGuessLocation(location)}
+              setCurrentMarkerLocation={(location) =>
+                setCurrentGuessLocation(location)
+              }
             ></MapView>
             <button
-              className="submit-button"
+              className='submit-button'
               title={isGameOver ? 'Results' : 'Submit'}
               disabled={isGameOver ? false : isSubmitDisabled()}
               onClick={() => {
