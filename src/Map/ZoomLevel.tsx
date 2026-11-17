@@ -1,6 +1,5 @@
 export interface ZoomLevel {
   zoom: number;
-  boundsFactor: number;
 }
 
 // max zoom level 17
@@ -9,15 +8,23 @@ export const MAX_ZOOM = 14;
 
 // Zoom 15+ switches to the newer, more detailed sheets of the historical layer, so the game
 // starts at 14.
-// boundsFactor * 4 is the half-width of the pan box in degrees. Zoom 14 is sized so the box is
-// 2880px wide (2 * 4 * 0.0309 * 256 * 2^14 / 360). Each level doubles the factor per zoom step
-// (0.0309 * 2^(14 - zoom)), so the box stays 2880px wide on screen at every level while covering
-// more ground.
 export const ZOOM_LEVELS: ZoomLevel[] = [
-  { zoom: 14, boundsFactor: 0.0309 },
-  { zoom: 13, boundsFactor: 0.0618 },
-  { zoom: 12, boundsFactor: 0.1236 },
-  { zoom: 11, boundsFactor: 0.2472 },
-  { zoom: 10, boundsFactor: 0.4944 },
-  { zoom: 8, boundsFactor: 1.9776 },
+  { zoom: 14 },
+  { zoom: 13 },
+  { zoom: 12 },
+  { zoom: 11 },
+  { zoom: 10 },
+  { zoom: 8 },
 ];
+
+// Top map pane on a 1440p screen (the game area is capped at 2560x1440, see #center in App.css):
+// width is 2560 minus the 150px sidebar; height is half of (1440 - 24px padding - 8px splitter).
+const REFERENCE_MAP_SIZE = { width: 2560 - 150, height: (1440 - 24 - 8) / 2 };
+const BOUNDS_PADDING = 0.5;
+
+// Pan limit in screen pixels at each level's zoom: 50% more than the 1440p view, the same on
+// every device, so smaller screens can pan further relative to their view.
+export const HISTORICAL_BOUNDS_SIZE = {
+  width: REFERENCE_MAP_SIZE.width * (1 + BOUNDS_PADDING),
+  height: REFERENCE_MAP_SIZE.height * (1 + BOUNDS_PADDING),
+};
