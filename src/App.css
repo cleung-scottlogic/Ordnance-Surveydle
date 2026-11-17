@@ -5,11 +5,11 @@
   align-items: stretch;
   flex-grow: 1;
   /* capped at a 2560x1440 (1440p) viewport so larger screens see no more map than that */
-  height: min(100svh, 1440px);
+  height: var(--app-height);
   min-height: 0;
   /* full-bleed: break out of #root's centered width so the maps reach the page edge */
-  width: min(100vw, 2560px);
-  margin-left: calc(50% - min(100vw, 2560px) / 2);
+  width: var(--app-width);
+  margin-left: calc(50% - var(--app-width) / 2);
   box-sizing: border-box;
   padding: 12px 0;
 }
@@ -206,7 +206,7 @@
   top: 50%;
   left: 50%;
   z-index: 5000;
-  font-size: 13vw;
+  font-size: calc(var(--app-width) * 0.13);
   font-weight: 900;
   line-height: 1;
   white-space: nowrap;

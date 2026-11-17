@@ -24,6 +24,11 @@
   --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
   --mono: ui-monospace, Consolas, monospace;
 
+  /* viewport capped at 2560x1440 (1440p): larger screens keep the 1440p layout with empty sides.
+     Use these instead of raw vw/vh/svh. */
+  --app-width: min(100vw, 2560px);
+  --app-height: min(100svh, 1440px);
+
   font: 18px/145% var(--sans);
   font-family: 'Elms Sans', sans-serif;
   font-optical-sizing: auto;
@@ -62,7 +67,7 @@
 
 #root {
   width: 90%;
-  max-width: 100%;
+  max-width: calc(var(--app-width) * 0.9);
   margin: 0 auto;
   text-align: center;
   min-height: 100svh;
