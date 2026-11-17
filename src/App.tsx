@@ -9,6 +9,7 @@ import Progress from './Progress/Progress';
 import { HISTORICAL_BOUNDS_SIZE, MAX_ZOOM, ZOOM_LEVELS } from './Map/ZoomLevel';
 import EndScreen from './EndScreen/EndScreen';
 import HowToPlay from './HowToPlay/HowToPlay';
+import CloseUp from './CloseUp/CloseUp';
 import { getDistanceKm, getScoreForGuess } from './ScoringService';
 import { loadDailyGame, saveDailyGuesses } from './StorageService';
 
@@ -260,6 +261,11 @@ function App() {
               enableRecenter={true}
               boundsSize={HISTORICAL_BOUNDS_SIZE}
             ></MapView>
+            <CloseUp
+              key={startingLocale.id}
+              center={origin}
+              tileLayer={`${DataService.historicalTileLayer}${DataService.historicalTileLayerKey}`}
+            />
           </div>
           <div
             className='map-splitter'
